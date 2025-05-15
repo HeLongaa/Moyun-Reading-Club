@@ -1,0 +1,32 @@
+backend structure
+Volume serial number is 2AD4-86EE
+C:.
+|   backend_structure.txt
+|   db.sqlite3
+|   manage.py   # 程序入口文件
+|   __init__.py
+|   
+\---backend
+    |   asgi.py # ASGI 配置
+    |   settings.py # 项目配置
+    |   test.py # 测试接口
+    |   urls.py # 主路由配置
+    |   wsgi.py # WSGI 配置
+    |   __init__.py
+    |   
+    +---book    # 书籍相关的接口定义及处理
+    |       main.py
+    |       
+    +---comments    # 评论相关的接口定义及处理
+    |       main.py
+    |       
+    +---log # 日志相关的接口定义及处理
+    |       main.py
+    |       
+    +---manager # 管理及身份认证相关
+    +---quanzi  # 圈子相关接口定义及处理
+    |       main.py
+    |       
+    \---__pycache__
+
+            
