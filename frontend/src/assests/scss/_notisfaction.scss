@@ -1,0 +1,50 @@
+.notification-bell {
+  position: relative;
+  cursor: pointer;
+
+  &__icon {
+    width: 24px;
+    height: 24px;
+    fill: $text-color;
+  }
+
+  &__badge {
+    position: absolute;
+    top: -6px;
+    right: -8px;
+    background: $danger-color;
+    color: white;
+    font-size: map-get($font-sizes, sm);
+    padding: 2px 6px;
+    border-radius: 10px;
+  }
+
+  &__dropdown {
+    position: absolute;
+    right: 0;
+    top: 40px;
+    width: 360px;
+    background: white;
+    box-shadow: map-get($box-shadows, lg);
+    border-radius: 8px;
+    z-index: 1000;
+
+    @include respond-to(md) {
+      width: 420px;
+    }
+  }
+}
+
+.notification-item {
+  padding: map-get($spacings, 3);
+  border-bottom: 1px solid $border-color;
+  transition: background 0.2s;
+
+  &--unread {
+    background: rgba($primary-color, 0.05);
+  }
+
+  &:hover {
+    background: rgba($primary-color, 0.1);
+  }
+}

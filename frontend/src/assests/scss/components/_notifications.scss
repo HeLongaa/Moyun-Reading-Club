@@ -1,0 +1,57 @@
+// 通知系统组件样式
+.notification-system {
+  &__bell {
+    position: relative;
+    cursor: pointer;
+    padding: 0.8rem;
+    @include transition(all 0.2s);
+
+    &:hover {
+      color: var(--primary-hover);
+    }
+
+    &-badge {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      background: var(--error-color);
+      color: white;
+      @include circle(20px);
+      font-size: 0.7rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  }
+
+  &__list {
+    max-width: 400px;
+    max-height: 70vh;
+    overflow-y: auto;
+    @include scrollbar-style;
+
+    &-item {
+      padding: 1rem;
+      border-bottom: 1px solid var(--border-color);
+      @include transition(background-color 0.2s);
+
+      &.unread {
+        background-color: rgba(var(--primary-rgb), 0.05);
+      }
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      &:hover {
+        background-color: var(--hover-bg);
+      }
+    }
+
+    &-time {
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      margin-top: 0.5rem;
+    }
+  }
+}

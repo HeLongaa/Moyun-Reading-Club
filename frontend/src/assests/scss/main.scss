@@ -1,0 +1,14 @@
+@use 'variables' as *;
+@use 'mixins' as *;
+@use 'themes/default';
+
+// 全局基础样式
+body {
+  font-family: $font-family;
+  @include apply-theme;
+}
+
+// 组件样式引入
+@use 'components/notifications';
+@use 'components/comments';
+@use 'components/books';
