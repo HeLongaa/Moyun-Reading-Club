@@ -1,0 +1,21 @@
+// 默认浅色主题
+:root {
+  --color-primary: #{$primary-color};
+  --color-text: #{$text-color};
+  --color-background: #ffffff;
+  --color-border: #{$border-color};
+}
+
+[data-theme="dark"] {
+  --color-primary: #{$primary-color};
+  --color-text: #f3f4f6;
+  --color-background: #1f2937;
+  --color-border: #374151;
+}
+
+// 主题应用混合
+@mixin apply-theme {
+  background-color: var(--color-background);
+  color: var(--color-text);
+  border-color: var(--color-border);
+}

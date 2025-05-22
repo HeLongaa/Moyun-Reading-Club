@@ -1,0 +1,71 @@
+// 颜色系统
+$primary-color: #2563eb;       // 主品牌色
+$secondary-color: #4f46e5;    // 次要颜色
+$success-color: #10b981;      // 成功状态
+$danger-color: #ef4444;       // 错误/危险状态
+$text-color: #1f2937;         // 主要文本颜色
+$border-color: #e5e7eb;       // 边框颜色
+
+// 角色颜色
+$role-colors: (
+        student: #4CAF50,          // 学生主题色
+        mentor: #2196F3            // 导师主题色
+);
+
+// 间距系统
+$spacing-unit: 8px;
+$spacings: (
+        0: 0,
+        1: $spacing-unit,
+        2: $spacing-unit * 2,
+        3: $spacing-unit * 3,
+        4: $spacing-unit * 4
+);
+
+// 响应式断点
+$breakpoints: (
+        xs: 480px,
+        sm: 640px,
+        md: 768px,
+        lg: 1024px,
+        xl: 1280px
+);
+
+// 字体系统
+$font-family: 'Helvetica Neue', Arial, sans-serif;
+$font-sizes: (
+        base: 16px,
+        sm: 14px,
+        lg: 18px,
+        xl: 24px
+);
+
+// 阴影系统
+$box-shadows: (
+        sm: 0 1px 3px rgba(0,0,0,0.12),
+        md: 0 4px 6px -1px rgba(0,0,0,0.1),
+        lg: 0 10px 15px -3px rgba(0,0,0,0.1)
+);
+$primary-color: #4a90e2;
+$secondary-color: #6c7a89;
+$accent-color: #f7dc6f;
+
+$font-size-base: 16px;
+$font-size-small: 14px;
+$font-size-large: 18px;
+
+$border-radius: 8px;
+$box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+$spacing-sm: 8px;
+$spacing-md: 16px;
+$spacing-lg: 24px;
+
+// 图书卡片样式
+$book-card-width: 220px;
+$book-card-margin: 16px;
+$book-cover-height: 280px;
+
+// 评分颜色
+$rating-color-full: #ffdd57;
+$rating-color-empty: #e0e0e0;

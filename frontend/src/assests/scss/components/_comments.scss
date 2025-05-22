@@ -1,0 +1,33 @@
+.comment-tree {
+  border-radius: 8px;
+  background: rgba($primary-color, 0.03);
+  padding: map-get($spacings, 2);
+}
+
+.comment-node {
+  margin-left: map-get($spacings, 3);
+  padding: map-get($spacings, 2) 0;
+  border-left: 2px solid $border-color;
+
+  &__header {
+    @include flex-center(row);
+    gap: map-get($spacings, 2);
+    margin-bottom: map-get($spacings, 2);
+  }
+
+  &__content {
+    @include text-ellipsis(3);
+    line-height: 1.6;
+  }
+}
+
+.comment-editor {
+  textarea {
+    width: 100%;
+    min-height: 100px;
+    padding: map-get($spacings, 2);
+    border: 1px solid $border-color;
+    border-radius: 4px;
+    resize: vertical;
+  }
+}
