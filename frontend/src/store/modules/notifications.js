@@ -36,5 +36,15 @@ const actions = {
     async realtimeHandler({ commit }, notification) {
         commit('ADD_NOTIFICATION', notification)
         this.dispatch('checkDesktopNotification', notification)
+    },
+    
+    async fetchUnreadCount({ commit }) {
+        const response = await this.$notificationsApi.getUnreadCount()
+        commit('SET_UNREAD_COUNT', response.data.count)
+    },
+    
+    async fetchByType({ commit }, type) {
+        const response = await this.$notificationsApi.getNotificationsByType(type)
+        commit('SET_NOTIFICATIONS', response.data)
     }
 }
