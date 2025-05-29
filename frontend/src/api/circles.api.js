@@ -14,5 +14,17 @@ export default {
     getMyCircles: () => http.get('/circles/me/'),
 
     // 获取圈子详情
-    getCircleDetail: (circleId) => http.get(`/circles/${circleId}/`)
+    getCircleDetail: (circleId) => http.get(`/circles/${circleId}/`),
+    
+    // 更新圈子信息
+    updateCircle: (circleId, data) => http.patch(`/circles/${circleId}/`, data),
+    
+    // 获取圈子成员
+    getCircleMembers: (circleId) => http.get(`/circles/${circleId}/members/`),
+    
+    // 管理成员权限
+    updateMemberRole: (circleId, userId, role) => http.put(`/circles/${circleId}/members/${userId}/`, { role }),
+    
+    // 删除圈子
+    deleteCircle: (circleId) => http.delete(`/circles/${circleId}/`)
 }

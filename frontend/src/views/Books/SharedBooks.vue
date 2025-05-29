@@ -1,41 +1,73 @@
 <template>
-  <MainLayout>
-    <div class="shared-books-view">
-      <h2>共享书籍库</h2>
-
-      <BookList
-          :books="sharedBooks"
-          :show-share-button="false"
-          class="book-grid"
-      />
-    </div>
-  </MainLayout>
+  <div class="shared-books">
+    <h2>共享图书</h2>
+    
+    <el-table :data="books" style="width: 100%">
+      <el-table-column prop="title" label="书名" />
+      <el-table-column prop="author" label="作者" />
+      <el-table-column label="操作" width="180">
+        <template #default="{ row }">
+          <el-button 
+            size="mini" 
+            type="danger"
+            @click="handleUnshare(row.id)"
+          >
+            取消共享
+          </el-button>
+        </template>
+      </el-table-column>
+    </el-table>
+  </div>
 </template>
 
 <script>
-import { mapState } from 'vuex'
-import BookList from '@/components/books/BookList.vue'
+import { mapState, mapActions } from 'vuex'
 
 export default {
-  components: {
-    BookList
+  name: 'SharedBooks',
+  
+  data() {
+    return {
+      books: [],
+      loading: false
+    }
   },
-
+  
   computed: {
-    ...mapState('books', ['sharedBooks'])
+    ...mapState('circles', ['currentCircle'])
   },
-
-  async created() {
-    await this.$store.dispatch('books/fetchSharedBooks')
+  
+  created() {
+    this.fetchSharedBooks()
+  },
+  
+  methods: {
+    ...mapActions('books', ['getSharedBooks', 'unshareBook']),
+    
+    async fetchSharedBooks() {
+      this.loading = true
+      try {
+        const res = await this.getSharedBooks(this.currentCircle.id)
+        this.books = res.data
+      } finally {
+        this.loading = false
+      }
+    },
+    
+    async handleUnshare(bookId) {
+      await this.unshareBook({
+        bookId,
+        circleId: this.currentCircle.id
+      })
+      this.$message.success('已取消共享')
+      this.fetchSharedBooks()
+    }
   }
 }
 </script>
 
-<style lang="scss" scoped>
-.book-grid {
-  margin-top: 2rem;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 1.5rem;
+<style scoped>
+.shared-books {
+  padding: 20px;
 }
 </style>
