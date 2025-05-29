@@ -50,6 +50,40 @@ const actions = {
     async fetchCircleDetail({ commit }, circleId) {
         const response = await this.$circlesApi.getCircleDetail(circleId)
         commit('SET_CURRENT_CIRCLE', response.data)
+    },
+
+    async updateCircle({ commit, state }, { circleId, data }) {
+        const response = await this.$circlesApi.updateCircle(circleId, data)
+        commit('SET_CURRENT_CIRCLE', response.data)
+        
+        // 更新我的圈子列表中的信息
+        const index = state.myCircles.findIndex(c => c.id === circleId)
+        if (index !== -1) {
+            commit('SET_MY_CIRCLES', [
+                ...state.myCircles.slice(0, index),
+                response.data,
+                ...state.myCircles.slice(index + 1)
+            ])
+        }
+    },
+
+    async fetchCircleMembers({ commit }, circleId) {
+        const response = await this.$circlesApi.getCircleMembers(circleId)
+        commit('SET_CURRENT_CIRCLE', {
+            ...state.currentCircle,
+            members: response.data
+        })
+    },
+
+    async updateMemberRole({ dispatch }, { circleId, userId, role }) {
+        await this.$circlesApi.updateMemberRole(circleId, userId, role)
+        await dispatch('fetchCircleMembers', circleId)
+    },
+
+    async deleteCircle({ commit, state }, circleId) {
+        await this.$circlesApi.deleteCircle(circleId)
+        commit('SET_MY_CIRCLES', state.myCircles.filter(c => c.id !== circleId))
+        commit('SET_CURRENT_CIRCLE', null)
     }
 }
 
