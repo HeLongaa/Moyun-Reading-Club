@@ -17,5 +17,11 @@ export default [
         name: 'Recommendations',
         component: () => import('@/views/Books/Recommendations'),
         meta: { requiresAuth: true }
+    },
+    {
+        path: '/shared-books',
+        name: 'SharedBooks',
+        component: () => import('@/views/Books/SharedBooks'),
+        meta: { requiresAuth: true }
     }
 ]

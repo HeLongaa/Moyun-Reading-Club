@@ -1,8 +1,11 @@
 import http from '@/utils/api'
+import { mockBooks } from '../mock/data'
+
+const useMock = process.env.NODE_ENV === 'development'
 
 export default {
     // 获取图书列表
-    getBooks: (params) => http.get('/books/', { params }),
+    getBooks: (params) => useMock ? Promise.resolve(mockBooks) : http.get('/books/', { params }),
 
     // 获取图书详情
     getBookDetail: (bookId) => http.get(`/books/${bookId}/`),
