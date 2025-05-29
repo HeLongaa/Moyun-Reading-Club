@@ -1,74 +1,127 @@
 <template>
-  <MainLayout>
-    <div class="notifications-view">
-      <h2>通知中心</h2>
-
-      <div class="header-actions">
-        <button @click="markAllAsRead" class="mark-read-button">
-          全部标记为已读
-        </button>
-      </div>
-
-      <NotificationList
-          :notifications="notifications"
-          @click:notification="handleNotificationClick"
-          class="notification-list"
-      />
-
-      <div v-if="isLoading" class="loading-indicator">
-        加载中...
-      </div>
+  <div class="notifications-view">
+    <h2>通知中心</h2>
+    
+    <el-tabs v-model="activeTab" @tab-click="handleTabChange">
+      <el-tab-pane label="全部" name="all" />
+      <el-tab-pane label="系统" name="system" />
+      <el-tab-pane label="评论" name="comment" />
+      <el-tab-pane label="圈子" name="circle" />
+    </el-tabs>
+    
+    <div class="actions">
+      <el-button 
+        size="small" 
+        @click="markAllAsRead"
+        :loading="markingAll"
+      >
+        全部已读
+      </el-button>
     </div>
-  </MainLayout>
+    
+    <el-table :data="notifications" style="width: 100%">
+      <el-table-column prop="title" label="通知" />
+      <el-table-column prop="created_at" label="时间" width="180" />
+      <el-table-column label="状态" width="100">
+        <template #default="{ row }">
+          <el-tag 
+            size="small" 
+            :type="row.read ? '' : 'danger'"
+          >
+            {{ row.read ? '已读' : '未读' }}
+          </el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column label="操作" width="120">
+        <template #default="{ row }">
+          <el-button 
+            v-if="!row.read"
+            size="mini" 
+            @click="markAsRead(row.id)"
+          >
+            标记已读
+          </el-button>
+        </template>
+      </el-table-column>
+    </el-table>
+  </div>
 </template>
 
 <script>
 import { mapState, mapActions } from 'vuex'
-import NotificationList from '@/components/ui/NotificationSystem/NotificationList.vue'
 
 export default {
-  components: {
-    NotificationList
-  },
-
+  name: 'NotificationsView',
+  
   data() {
     return {
-      isLoading: false
+      activeTab: 'all',
+      notifications: [],
+      markingAll: false,
+      loading: false
     }
   },
-
+  
   computed: {
-    ...mapState('notifications', ['notifications'])
+    ...mapState('notifications', ['unreadCount'])
   },
-
-  async created() {
-    await this.loadNotifications()
+  
+  created() {
+    this.fetchNotifications()
   },
-
+  
   methods: {
-    ...mapActions('notifications', ['fetchNotifications', 'markAllRead']),
-
-    async loadNotifications() {
-      this.isLoading = true
+    ...mapActions('notifications', [
+      'fetchNotifications',
+      'fetchByType',
+      'markAsRead',
+      'markAllAsRead'
+    ]),
+    
+    async fetchNotifications() {
+      this.loading = true
       try {
-        await this.fetchNotifications()
+        if (this.activeTab === 'all') {
+          await this.fetchNotifications()
+        } else {
+          await this.fetchByType(this.activeTab)
+        }
       } finally {
-        this.isLoading = false
+        this.loading = false
       }
     },
-
+    
+    handleTabChange() {
+      this.fetchNotifications()
+    },
+    
+    async markAsRead(id) {
+      await this.markAsRead(id)
+      this.fetchNotifications()
+    },
+    
     async markAllAsRead() {
-      await this.markAllRead()
-    },
-
-    handleNotificationClick(notification) {
-      if (notification.link) {
-        this.$router.push(notification.link)
-      }
-      if (!notification.read) {
-        this.$store.dispatch('notifications/markAsRead', notification.id)
+      this.markingAll = true
+      try {
+        await this.markAllAsRead()
+        this.fetchNotifications()
+      } finally {
+        this.markingAll = false
       }
     }
   }
 }
 </script>
+
+<style scoped>
+.notifications-view {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.actions {
+  margin: 15px 0;
+  text-align: right;
+}
+</style>
