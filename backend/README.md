@@ -1,453 +1,236 @@
-# MoYun API Server
+# 墨韵读书交流平台 (nodejs 版本)
 
-> "墨韵"在线读书交流平台 API 服务端
+> 这是"墨韵"读书交流平台的 nodejs 重构版本，采用现代化的异步特性和 REST API 设计。
 
-## 项目介绍
+[API文档](./docs/api-docs.md)
 
-墨韵是一个在线读书交流平台，旨在为用户提供一个分享阅读心得、交流读书感悟的空间。项目采用前后端分离架构，本部分为API服务端。
+[测试文档](./docs/test-docs.md)
 
-### 主要功能
+## 项目简介
 
-* 用户系统：完整的账号管理和认证
-* 书评系统：发布、点赞、评论书评
-* 圈子系统：创建和管理读书交流圈
-* 消息系统：私信和通知集中管理
-* AI助手：基于通义千问的创作辅助
+墨韵是一个专注于读书交流的在线平台，旨在为书友们提供一个分享读书心得、交流读书体会的空间。本项目是原 Python-Fastapi 版本的完全重构，采用了 nodejs 框架，提供了更好的性能和开发体验。
 
-### 技术特点
+## 主要特性
 
-* RESTful API设计
-* 标准化的JSON响应格式
-* Redis缓存集成
-* 完整的错误处理
-* 第三方API集成（通义千问、今日诗词等）
+- 🚀 基于 nodejs 的现代框架
+- 🔐 JWT 认证和基于角色的访问控制
+- 📚 完整的书籍管理和书评系统
+- 👥 用户社交圈子功能
+- 💬 实时消息通知系统
+- 📝 支持富文本编辑的帖子系统
+- 📊 OpenAPI/Swagger 文档生成
+- 🔍 高效的搜索功能
 
-## API文档
+## 技术栈
 
-### 认证相关
-
-#### 登录
-- **POST** `/api/auth/login`
-```json
-请求体：
-{
-    "account": "username",
-    "password": "password"
-}
-
-响应：
-{
-    "status": "success",
-    "data": {
-        "token": "xxx",
-        "user": {
-            "id": 1,
-            "account": "username",
-            "role": "student"
-        }
-    }
-}
-```
-
-#### 注册
-- **POST** `/api/auth/register`
-```json
-请求体：
-{
-    "account": "username",
-    "password": "password",
-    "email": "user@example.com"
-}
-
-响应：
-{
-    "status": "success",
-    "data": {
-        "message": "Registration successful"
-    }
-}
-```
-
-### 用户相关
-
-#### 获取当前用户信息
-- **GET** `/api/users/me`
-```json
-响应：
-{
-    "status": "success",
-    "data": {
-        "user": {
-            "id": 1,
-            "account": "username",
-            "signature": "个性签名",
-            "email": "user@example.com"
-        },
-        "profile_photo": "/static/profilePhoto/1.jpg"
-    }
-}
-```
-
-#### 更新用户资料
-- **PUT** `/api/users/me`
-```json
-请求体：
-{
-    "account": "new_username",
-    "signature": "新的签名",
-    "email": "new@example.com"
-}
-
-响应：
-{
-    "status": "success",
-    "data": {
-        "message": "Profile updated successfully"
-    }
-}
-```
-
-### 书评相关
-
-#### 获取书评列表
-- **GET** `/api/journals?limit=10&offset=0`
-```json
-响应：
-{
-    "status": "success",
-    "data": {
-        "journals": [{
-            "id": 1,
-            "title": "书评标题",
-            "first_paragraph": "首段内容",
-            "author": {
-                "id": 1,
-                "name": "作者名"
-            },
-            "publish_time": "2024-04-17T19:53:52+08:00"
-        }],
-        "pagination": {
-            "total": 100,
-            "current_page": 1,
-            "per_page": 10
-        }
-    }
-}
-```
-
-#### 发表书评
-- **POST** `/api/journals`
-```json
-请求体：
-{
-    "title": "书评标题",
-    "content": "书评内容",
-    "book_id": 1
-}
-
-响应：
-{
-    "status": "success",
-    "data": {
-        "journal_id": 1,
-        "message": "Journal published successfully"
-    }
-}
-```
-
-### 圈子相关
-
-#### 获取圈子列表
-- **GET** `/api/groups`
-```json
-响应：
-{
-    "status": "success",
-    "data": {
-        "groups": [{
-            "id": 1,
-            "name": "圈子名称",
-            "description": "圈子描述",
-            "founder": {
-                "id": 1,
-                "name": "创建者"
-            }
-        }]
-    }
-}
-```
-
-#### 创建圈子
-- **POST** `/api/groups`
-```json
-请求体：
-{
-    "name": "圈子名称",
-    "description": "圈子描述"
-}
-
-响应：
-{
-    "status": "success",
-    "data": {
-        "group_id": 1,
-        "message": "Group created successfully"
-    }
-}
-```
-
-### 消息相关
-
-#### 获取未读消息
-- **GET** `/api/messages`
-```json
-响应：
-{
-    "status": "success",
-    "data": {
-        "journal_messages": {
-            "journals": [],
-            "comments": []
-        },
-        "group_messages": {
-            "groups": [],
-            "discussions": []
-        },
-        "chat_messages": {
-            "senders": [],
-            "chats": []
-        }
-    }
-}
-```
-
-#### 发送私信
-- **POST** `/api/messages/chat`
-```json
-请求体：
-{
-    "receiver_id": 2,
-    "content": "消息内容"
-}
-
-响应：
-{
-    "status": "success",
-    "data": {
-        "message": "Message sent successfully"
-    }
-}
-```
-
-## 数据库结构
-
-### 主要实体表
-
-#### user（用户表）
-```sql
-CREATE TABLE `user` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `account` varchar(24) NOT NULL COMMENT '用户名',
-  `password` text NOT NULL COMMENT '密码',
-  `signature` varchar(128) DEFAULT '' COMMENT '签名档',
-  `email` varchar(128) DEFAULT NULL COMMENT '邮箱',
-  `telephone` varchar(11) DEFAULT NULL COMMENT '联系电话',
-  `role` enum('student','teacher','admin') NOT NULL DEFAULT 'student' COMMENT '身份组',
-  PRIMARY KEY (`id`)
-)
-```
-
-#### book（书籍表）
-```sql
-CREATE TABLE `book` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `isbn` varchar(32) NOT NULL COMMENT 'ISBN',
-  `title` varchar(128) NOT NULL COMMENT '标题',
-  `author` varchar(128) NOT NULL COMMENT '作者',
-  `description` text COMMENT '简介',
-  PRIMARY KEY (`id`)
-)
-```
-
-#### journal（书评表）
-```sql
-CREATE TABLE `journal` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `title` varchar(128) NOT NULL,
-  `first_paragraph` text NOT NULL,
-  `content` text NOT NULL,
-  `publish_time` datetime NOT NULL,
-  `author_id` int NOT NULL,
-  `book_id` int NOT NULL,
-  PRIMARY KEY (`id`)
-)
-```
-
-#### group（圈子表）
-```sql
-CREATE TABLE `group` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(128) NOT NULL COMMENT '圈子的名称',
-  `founder_id` int NOT NULL COMMENT '圈子创建者的ID',
-  `establish_time` datetime NOT NULL,
-  `description` text COMMENT '对该圈子的介绍',
-  PRIMARY KEY (`id`)
-)
-```
-
-### 关联表
-
-- chat：私信记录
-- journal_comment：书评评论
-- journal_like：书评点赞
-- group_discussion：圈子讨论
-- group_user：圈子成员
-
-## 开发和部署指南
-
-### 环境要求
-
-* Python 3.10+
-* MySQL 8.0+
-* Redis 6.0+
-* 操作系统：Windows/Linux
-
-### 本地开发
-
-1. 获取代码
-```bash
-git clone [仓库地址]
-cd MoYun-updating-version
-```
-
-2. 安装依赖
-```bash
-pip install -r requirements.txt
-```
-
-3. 配置文件
-复制`config.yaml.example`为`config.yaml`并修改：
-- 数据库连接信息
-- Redis配置
-- 通义千问API密钥（可选）
-- 邮箱服务配置（可选）
-
-4. 初始化数据库
-```bash
-python initDB.py
-```
-
-5. 运行开发服务器
-```bash
-python app.py
-```
-
-### 生产环境部署
-
-1. 配置Nginx
-将`nginx.cfg`复制到Nginx配置目录：
-```bash
-cp nginx.cfg /etc/nginx/conf.d/moyun.conf
-nginx -t && nginx -s reload
-```
-
-2. 使用uWSGI（Linux）
-```bash
-uwsgi --ini uwsgi.ini
-```
-
-或使用Tornado（Windows）
-```bash
-python tornadoApp.py
-```
-
-### 文件存储
-
-用户上传的文件存储在static目录下：
-- /static/profilePhoto/：用户头像
-- /static/bookCover/：书籍封面
-- /static/journalHeader/：书评封面
-- /static/groupIcon/：圈子图标
+- **后端框架**: nodejs
+- **数据库**: mySQL
+- **ORM**: SQLAlchemy (异步)
+- **认证**: JWT
+- **文档**: OpenAPI/Swagger
+- **部署**: Docker or Ubuntu Server
 
 ## 项目结构
 
 ```
-MoYun-updating-version/
-├── app.py                 # Flask主应用入口
-├── tornadoApp.py         # Tornado服务器入口（Windows生产环境）
-├── uwsgi.ini             # uWSGI配置（Linux生产环境）
-├── config.yaml           # 全局配置文件
-├── requirements.txt      # Python依赖列表
-├── ddl.sql              # 数据库结构定义
-├── initDB.py            # 数据库初始化脚本
-├── nginx.cfg            # Nginx配置示例
-│
-├── service/             # 核心服务模块
-│   ├── File.py         # 文件处理服务
-│   ├── Img.py          # 图片处理服务
-│   ├── Network.py      # 网络请求服务（第三方API封装）
-│   ├── Utils.py        # 通用工具函数
-│   │
-│   ├── database/       # 数据库操作模块
-│   │   ├── DAO.py     # 数据访问对象
-│   │   ├── Model.py   # 数据模型定义
-│   │   ├── Redis.py   # Redis缓存操作
-│   │   └── Utils.py   # 数据库工具函数
-│   │
-│   └── response/       # API响应处理模块
-│       ├── __init__.py
-│       ├── _Utils.py   # 响应工具函数
-│       ├── Book.py     # 书籍相关API
-│       ├── Chat.py     # 私信相关API
-│       ├── Error.py    # 错误处理API
-│       ├── Group.py    # 圈子相关API
-│       ├── Home.py     # 首页相关API
-│       ├── Index.py    # 认证相关API
-│       ├── Journal.py  # 书评相关API
-│       ├── LLM.py      # AI助手API
-│       ├── Message.py  # 消息中心API
-│       ├── Profile.py  # 用户资料API
-│       └── Search.py   # 搜索功能API
-│
-└── uwsgi/              # uWSGI运行时文件
-    └── uwsgi.pid      # uWSGI进程ID文件
+backend/
+├── src/                    # 源代码目录
+│   ├── config/             # 配置文件
+│   ├── controllers/        # 控制器
+│   ├── middlewares/        # 中间件
+│   ├── models/             # 数据库模型
+│   ├── routes/             # 路由
+│   ├── services/           # 服务
+│   ├── utils/              # 工具函数
+│   ├── app.js              # 应用程序配置
+│   └── index.js            # 入口文件
+├── static/                 # 静态文件目录
+│   ├── bookCover/          # 书籍封面
+│   ├── groupIcon/          # 圈子图标
+│   ├── journalHeader/      # 书评头图
+│   └── profilePhoto/       # 用户头像
+├── .env                    # 环境变量
+└── package.json            # 项目依赖
+```
 
-主要目录说明：
+## 功能模块
 
-1. 根目录配置文件
-   - config.yaml：项目配置，包括数据库、Redis、第三方API等配置
-   - requirements.txt：项目依赖清单
-   - ddl.sql：数据库结构定义
-   - nginx.cfg：Nginx服务器配置示例
-   - uwsgi.ini：uWSGI服务器配置
+- 账号管理：注册、登录、找回密码等
+- 个人资料：查看和编辑个人资料
+- 书籍管理：书籍列表、详情、添加、编辑、删除
+- 书评系统：发表书评、评论、点赞
+- 圈子系统：创建圈子、加入圈子、发表讨论、回复讨论
+- 聊天系统：用户之间的私聊
+- 消息通知：书评评论、讨论回复等通知
+- 搜索功能：搜索书籍、书评、用户、圈子
+- LLM集成：通义千问模型集成，提供书籍推荐、书评生成等功能
 
-2. 核心服务模块（service/）
-   - File.py：处理文件上传、删除、路径管理等
-   - Img.py：处理图片压缩、格式转换等
-   - Network.py：封装第三方API调用（今日诗词、通义千问等）
-   - Utils.py：提供通用工具函数
+## 安装和运行
 
-3. 数据库模块（service/database/）
-   - DAO.py：实现数据库CRUD操作
-   - Model.py：定义数据库模型和关系
-   - Redis.py：实现缓存层操作
-   - Utils.py：数据库工具函数
+### 前提条件
 
-4. API响应模块（service/response/）
-   - _Utils.py：共用的响应处理工具
-   - Book.py：书籍增删改查API
-   - Chat.py：私信发送和管理API
-   - Error.py：统一的错误响应处理
-   - Group.py：圈子管理和互动API
-   - Home.py：首页数据聚合API
-   - Index.py：用户认证和授权API
-   - Journal.py：书评发布和互动API
-   - LLM.py：AI创作助手API
-   - Message.py：消息中心API
-   - Profile.py：用户资料管理API
-   - Search.py：全局搜索API
+- Node.js 14.0+
+- MySQL 5.7+
 
-5. 入口文件
-   - app.py：开发环境入口
-   - tornadoApp.py：Windows生产环境入口
-   - uwsgi.ini：Linux生产环境入口
+### 安装依赖
+
+```bash
+npm install
+```
+
+### 配置环境变量
+
+创建 `.env` 文件，并配置以下环境变量：
+
+```
+# 服务器配置
+PORT=5000
+
+# 数据库配置
+DB_HOST=localhost
+DB_PORT=3306
+DB_NAME=moyun
+DB_USER=root
+DB_PASSWORD=your_password
+
+# JWT配置
+JWT_SECRET=your_jwt_secret
+JWT_EXPIRES_IN=7d
+
+# 邮件配置
+MAIL_HOST=smtp.example.com
+MAIL_PORT=587
+MAIL_USER=your_email@example.com
+MAIL_PASS=your_email_password
+
+# 文件存储配置
+STATIC_FOLDER=../static
+
+# 通义千问API配置
+QWEN_API_KEY=your_qwen_api_key
+QWEN_API_URL=https://api.example.com/qwen
+```
+
+### 初始化数据库
+
+```bash
+npm run init-db
+```
+
+### 启动服务器
+
+开发模式：
+
+```bash
+npm run dev
+```
+
+生产模式：
+
+```bash
+npm start
+```
+
+## API文档[ ⚠️ 简略 ]
+
+### 账号相关
+
+- `POST /api/account/register` - 注册新用户
+- `POST /api/account/login` - 用户登录
+- `POST /api/account/request-password-reset` - 请求重置密码
+- `POST /api/account/reset-password` - 重置密码
+- `GET /api/account/me` - 获取当前用户信息
+- `POST /api/account/change-password` - 修改密码
+
+### 个人资料相关
+
+- `GET /api/profile/:id?` - 获取用户个人资料
+- `PUT /api/profile` - 更新个人资料
+- `POST /api/profile/upload-photo` - 上传头像
+- `GET /api/profile/stats/:id?` - 获取用户统计信息
+
+### 书籍相关
+
+- `GET /api/book` - 获取书籍列表
+- `GET /api/book/:id` - 获取书籍详情
+- `POST /api/book` - 创建书籍
+- `PUT /api/book/:id` - 更新书籍
+- `DELETE /api/book/:id` - 删除书籍
+- `POST /api/book/upload-cover` - 上传书籍封面
+- `GET /api/book/types` - 获取书籍类型列表
+
+### 书评相关
+
+- `GET /api/journal` - 获取书评列表
+- `GET /api/journal/:id` - 获取书评详情
+- `POST /api/journal` - 创建书评
+- `PUT /api/journal/:id` - 更新书评
+- `DELETE /api/journal/:id` - 删除书评
+- `GET /api/journal/:id/comments` - 获取书评评论
+- `POST /api/journal/:id/comments` - 添加评论
+- `DELETE /api/journal/:id/comments/:commentId` - 删除评论
+- `POST /api/journal/:id/like` - 点赞/取消点赞书评
+- `POST /api/journal/upload-header` - 上传书评头图
+
+### 圈子相关
+
+- `GET /api/group` - 获取圈子列表
+- `GET /api/group/:id` - 获取圈子详情
+- `POST /api/group` - 创建圈子
+- `PUT /api/group/:id` - 更新圈子
+- `DELETE /api/group/:id` - 删除圈子
+- `POST /api/group/:id/join` - 加入圈子
+- `POST /api/group/:id/leave` - 退出圈子
+- `GET /api/group/:id/members` - 获取圈子成员列表
+- `GET /api/group/:id/discussions` - 获取圈子讨论列表
+- `POST /api/group/:id/discussions` - 创建讨论
+- `GET /api/group/:id/discussions/:discussionId` - 获取讨论详情
+- `POST /api/group/:id/discussions/:discussionId/reply` - 回复讨论
+- `DELETE /api/group/:id/discussions/:discussionId` - 删除讨论
+- `POST /api/group/upload-icon` - 上传圈子图标
+
+### 聊天相关
+
+- `GET /api/chat` - 获取聊天列表
+- `GET /api/chat/:partnerId` - 获取与指定用户的聊天记录
+- `POST /api/chat` - 发送消息
+- `PUT /api/chat/:messageId/read` - 标记消息为已读
+- `GET /api/chat/unread/count` - 获取未读消息数量
+
+### 消息通知相关
+
+- `GET /api/message/unread` - 获取未读消息
+- `PUT /api/message/journal-comment/:commentId/read` - 标记书评评论为已读
+- `PUT /api/message/discussion-reply/:replyId/read` - 标记圈子讨论回复为已读
+- `PUT /api/message/read-all` - 标记所有消息为已读
+
+### 搜索相关
+
+- `GET /api/search` - 综合搜索
+
+### 首页相关
+
+- `GET /api/homepage` - 获取首页数据
+
+### 错误信息相关
+
+- `GET /api/error/:code` - 获取错误信息
+- `POST /api/error` - 创建错误信息
+- `PUT /api/error/:code` - 更新错误信息
+- `DELETE /api/error/:code` - 删除错误信息
+
+### LLM相关
+
+- `POST /api/llm/qwen` - 调用通义千问模型
+- `POST /api/llm/recommend-books` - 书籍推荐
+- `POST /api/llm/generate-journal` - 书评生成 
+
+## 贡献指南
+
+1. Fork 本项目
+2. 创建特性分支 (`git checkout -b feature/AmazingFeature`)
+3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
+4. 推送到分支 (`git push origin feature/AmazingFeature`)
+5. 提交 Pull Request
+
+
