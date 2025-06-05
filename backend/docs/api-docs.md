@@ -21,7 +21,8 @@
     "password": "密码",
     "email": "邮箱（可选）",
     "telephone": "手机号（可选）",
-    "signature": "个性签名（可选）"
+    "signature": "个性签名（可选）",
+    "role": "用户身份，默认注册（不填）为stu"
   }
   ```
 - **响应**:

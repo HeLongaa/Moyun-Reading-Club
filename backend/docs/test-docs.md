@@ -22,18 +22,19 @@
 
 ## 认证相关
 
-### 1. 用户注册
+### 1. 用户注册✅
 
 - **URL**: `/account/register`
 - **方法**: `POST`
 - **请求体**:
   ```json
   {
-    "account": "用户名",
-    "password": "密码",
-    "email": "邮箱（可选）",
-    "telephone": "手机号（可选）",
-    "signature": "个性签名（可选）"
+    "account": "tea-1",
+    "password": "passwd",
+    "email": "tea@mail.com",
+    "telephone": "19888998888",
+    "signature": "我是老师",
+    "role": "teacher"
   }
   ```
 - **响应**:
@@ -42,26 +43,26 @@
     "success": true,
     "message": "注册成功",
     "data": {
-      "id": 1,
-      "account": "用户名",
-      "email": "邮箱",
-      "telephone": "手机号",
-      "signature": "个性签名",
-      "role": "student",
-      "token": "JWT令牌"
+        "id": 9,
+        "account": "tea-1",
+        "email": "tea@mail.com",
+        "telephone": "19888998888",
+        "signature": "我是老师",
+        "role": "teacher",
+        "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OSwiYWNjb3VudCI6InRlYS0xIiwicm9sZSI6InRlYWNoZXIiLCJpYXQiOjE3NDkwNTA1MzUsImV4cCI6MTc0OTA1MDU0Mn0.zmC5PYO89fmPcNj73vpxxuF4i91vtv65zOr7SfVxMtM"
     }
-  }
+  } 
   ```
-
-### 2. 用户登录
+  
+### 2. 用户登录✅
 
 - **URL**: `/account/login`
 - **方法**: `POST`
 - **请求体**:
   ```json
   {
-    "account": "用户名",
-    "password": "密码"
+    "account": "tea-1",
+    "password": "passwd"
   }
   ```
 - **响应**:
@@ -70,18 +71,18 @@
     "success": true,
     "message": "登录成功",
     "data": {
-      "id": 1,
-      "account": "用户名",
-      "email": "邮箱",
-      "telephone": "手机号",
-      "signature": "个性签名",
-      "role": "student",
-      "token": "JWT令牌"
+        "id": 9,
+        "account": "tea-1",
+        "email": "tea@mail.com",
+        "telephone": "19888998888",
+        "signature": "我是老师",
+        "role": "teacher",
+        "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OSwiYWNjb3VudCI6InRlYS0xIiwicm9sZSI6InRlYWNoZXIiLCJpYXQiOjE3NDkwNTA3NTYsImV4cCI6MTc0OTA1MDc2M30.3ZFztTabU3wBcqeHnErxzQDqlFIizCqQ2lWmC0Jb7r4"
     }
   }
   ```
 
-### 3. 请求重置密码
+### 3. 请求重置密码⚠️
 
 - **URL**: `/account/request-password-reset`
 - **方法**: `POST`
@@ -99,7 +100,7 @@
   }
   ```
 
-### 4. 重置密码
+### 4. 重置密码⚠️
 
 - **URL**: `/account/reset-password`
 - **方法**: `POST`
@@ -118,7 +119,7 @@
   }
   ```
 
-### 5. 获取当前用户信息
+### 5. 获取当前用户信息✅
 
 - **URL**: `/account/me`
 - **方法**: `GET`
@@ -128,19 +129,19 @@
   {
     "success": true,
     "data": {
-      "id": 1,
-      "account": "用户名",
-      "email": "邮箱",
-      "telephone": "手机号",
-      "signature": "个性签名",
-      "role": "student"
+        "id": 9,
+        "account": "tea-1",
+        "email": "tea@mail.com",
+        "telephone": "19888998888",
+        "signature": "我是老师",
+        "role": "teacher"
     }
   }
   ```
 
 ### 6. 修改密码
 
-- **URL**: `/account/change-password`
+- **URL**: `/account/change-password`✅
 - **方法**: `POST`
 - **认证**: 需要 Bearer Token
 - **请求体**:
@@ -160,7 +161,7 @@
 
 ## 个人资料相关
 
-### 1. 获取用户个人资料
+### 1. 获取用户个人资料✅
 
 - **URL**: `/profile/:id?`（不提供 id 时获取自己的资料）
 - **方法**: `GET`

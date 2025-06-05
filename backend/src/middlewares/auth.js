@@ -5,7 +5,7 @@ const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
 const JWT_SECRET = process.env.JWT_SECRET || 'MoYun';
-const JWT_EXPIRES_IN = parseInt(process.env.JWT_EXPIRES_IN || '86400');
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
 
 /**
  * 验证JWT令牌
@@ -68,7 +68,7 @@ const generateToken = (user) => {
     },
     JWT_SECRET,
     {
-      expiresIn: JWT_EXPIRES_IN
+      expiresIn: JWT_EXPIRES_IN  // 使用环境变量中的值，例如 "7d"
     }
   );
 };
@@ -77,4 +77,4 @@ module.exports = {
   verifyToken,
   isAdmin,
   generateToken
-}; 
+};
