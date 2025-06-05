@@ -21,7 +21,7 @@ const passwordResetTokens = {};
  */
 exports.register = async (req, res) => {
   try {
-    const { account, password, email, telephone, signature } = req.body;
+    const { account, password, email, telephone, signature, role } = req.body;
     
     // 检查必要字段
     if (!account || !password) {
@@ -50,7 +50,7 @@ exports.register = async (req, res) => {
       email: email || null,
       telephone: telephone || null,
       signature: signature || '',
-      role: 'student' // 默认角色
+      role: role || 'student' // 默认角色
     });
     
     // 如果提供了邮箱，发送欢迎邮件
