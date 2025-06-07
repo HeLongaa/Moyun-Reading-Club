@@ -3,26 +3,13 @@
  * 用于与第三方API交互
  */
 const axios = require('axios');
-const { queryConfig } = require('../utils');
+const config = require('../utils/index');
 
 class ApiService {
   constructor() {
-    this.weatherConfig = queryConfig('Yiketianqi');
-    this.qwenConfig = queryConfig('Qwen');
-    
-    // 检查配置是否完整
-    this.weatherConfigured = this.weatherConfig.appid && this.weatherConfig.appsecret;
-    this.qwenConfigured = this.qwenConfig.api_key;
-    
-    if (!this.weatherConfigured) {
-      console.warn('一刻天气API未完全配置，相关功能可能不可用');
-    }
-    
-    if (!this.qwenConfigured) {
-      console.warn('通义千问API未完全配置，相关功能可能不可用');
-    }
+    this.openAIConfig = config.openai;
   }
-  
+
   /**
    * 获取今日诗词
    * @returns {Promise<Object>} 诗词数据
@@ -44,65 +31,29 @@ class ApiService {
   }
   
   /**
-   * 获取天气信息
-   * @param {string} city 城市名称
-   * @returns {Promise<Object>} 天气数据
-   */
-  async getWeather(city) {
-    if (!this.weatherConfigured) {
-      return {
-        success: false,
-        error: '一刻天气API未配置'
-      };
-    }
-    
-    try {
-      const { version, appid, appsecret } = this.weatherConfig;
-      const url = `https://yiketianqi.com/api?version=${version}&appid=${appid}&appsecret=${appsecret}&city=${encodeURIComponent(city)}`;
-      
-      const response = await axios.get(url);
-      return {
-        success: true,
-        data: response.data
-      };
-    } catch (error) {
-      console.error('获取天气信息失败:', error);
-      return {
-        success: false,
-        error: '获取天气信息失败'
-      };
-    }
-  }
-  
-  /**
-   * 调用通义千问模型
+   * 调用大模型
    * @param {string} prompt 提示词
    * @returns {Promise<Object>} 模型响应
    */
-  async callQwenModel(prompt) {
-    if (!this.qwenConfigured) {
-      return {
-        success: false,
-        error: '通义千问API未配置'
-      };
-    }
-    
+  async chat2OpenAPI(prompt) {
     try {
-      const { api_key, model } = this.qwenConfig;
-      const url = 'https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation';
+      const { api_key, model } = this.openAIConfig;
+      const url = this.openAIConfig.api_url + '/v1/chat/completions';
       
       const response = await axios.post(
         url,
         {
           model,
-          input: {
-            prompt
-          },
-          parameters: {
-            temperature: 0.7,
-            top_p: 0.8,
-            top_k: 50
-          }
+          messages: [
+            {
+              role: "developer",
+              content: "你是一个有帮助的助手。"
+            },
+            {
+              role: "user",
+              content: prompt
+            }
+          ]
         },
         {
           headers: {
@@ -111,19 +62,22 @@ class ApiService {
           }
         }
       );
-      
+
+      const assistantMessage = response.data.choices[0].message.content;
       return {
         success: true,
-        data: response.data.output.text
+        data: assistantMessage,
+        use: response.data.usage
       };
     } catch (error) {
-      console.error('调用通义千问模型失败:', error);
+      console.error('调用OpenAI模型失败:', error);
       return {
         success: false,
-        error: '调用通义千问模型失败'
+        error: '调用OpenAI模型失败',
+        details: error.response?.data || error.message
       };
     }
   }
 }
 
-module.exports = ApiService; 
+module.exports = ApiService;

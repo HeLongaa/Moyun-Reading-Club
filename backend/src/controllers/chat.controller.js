@@ -25,12 +25,12 @@ exports.getChatList = async (req, res) => {
         {
           model: User,
           as: 'sender',
-          attributes: ['id', 'account', 'signature']
+          attributes: ['id', 'account', 'signature', 'avatar_path']
         },
         {
           model: User,
           as: 'receiver',
-          attributes: ['id', 'account', 'signature']
+          attributes: ['id', 'account', 'signature', 'avatar_path']
         }
       ],
       order: [['send_time', 'DESC']]

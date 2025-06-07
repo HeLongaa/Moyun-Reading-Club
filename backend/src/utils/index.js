@@ -34,15 +34,9 @@ const queryConfig = (section, key = null) => {
     'E-Mail': {
       Host: process.env.EMAIL_HOST || 'smtp.126.com',
       Port: parseInt(process.env.EMAIL_PORT || '465'),
-      Username: process.env.EMAIL_USERNAME || '',
-      Password: process.env.EMAIL_PASSWORD || '',
+      Username: process.env.EMAIL_USER || '',
+      Password: process.env.EMAIL_PASS || '',
       Sender: process.env.EMAIL_SENDER || ''
-    },
-    Flask: {
-      SECRET_KEY: process.env.JWT_SECRET || 'MoYun',
-      JSON_AS_ASCII: false,
-      PERMANENT_SESSION_LIFETIME: parseInt(process.env.JWT_EXPIRES_IN || '86400'),
-      Port: parseInt(process.env.PORT || '5000')
     },
     Path: {
       TemplateFolder: process.env.TEMPLATE_FOLDER || '/templates',
@@ -50,14 +44,10 @@ const queryConfig = (section, key = null) => {
       StoragePath: process.env.STORAGE_PATH || './static',
       ErrorImageSource: process.env.ERROR_IMAGE_SOURCE || 'HTTP Cats'
     },
-    Yiketianqi: {
-      version: process.env.YIKETIANQI_VERSION || 'v61',
-      appid: process.env.YIKETIANQI_APPID || '',
-      appsecret: process.env.YIKETIANQI_APPSECRET || ''
-    },
-    Qwen: {
-      api_key: process.env.QWEN_API_KEY || '',
-      model: process.env.QWEN_MODEL || 'qwen-max'
+    OPENAI: {
+      api_url: process.env.OPENAI_API_URL || 'https://api.deepseek.com/v1/chat/completions',
+      api_key: process.env.OPENAI_API_KEY || '',
+      model: process.env.OPENAI_MODEL || 'deepseek-r1'
     }
   };
 

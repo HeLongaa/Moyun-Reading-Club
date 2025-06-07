@@ -172,15 +172,21 @@ exports.getJournalById = async (req, res) => {
  */
 exports.createJournal = async (req, res) => {
   try {
-    const { title, first_paragraph, content, book_id } = req.body;
+    const { title, content, book_id } = req.body;
+    let { first_paragraph } = req.body;  // 使用 let 声明
     const author_id = req.user.id;
     
     // 检查必要字段
-    if (!title || !first_paragraph || !content || !book_id) {
+    if (!title || !content || !book_id) {
       return res.status(400).json({
         success: false,
-        error: '标题、首段、内容和书籍ID不能为空'
+        error: '标题、内容和书籍ID不能为空'
       });
+    }
+    
+    // 如果没有提供首段，则取内容的前100个字符
+    if (!first_paragraph) {
+      first_paragraph = content.substring(0, 100);
     }
     
     // 检查书籍是否存在
@@ -552,7 +558,17 @@ exports.uploadJournalHeader = async (req, res) => {
     
     // 文件路径
     const filePath = `/journalHeader/${req.file.filename}`;
-    
+    const { id } = req.params;
+    const journal = await Journal.findByPk(id);
+    if (!journal) {
+      return res.status(404).json({
+        success: false,
+        error: '书评不存在'
+      });
+    }
+    await journal.update({
+      header: filePath
+    });
     res.status(200).json({
       success: true,
       message: '头图上传成功',
@@ -567,4 +583,4 @@ exports.uploadJournalHeader = async (req, res) => {
       error: '上传头图失败，请稍后重试'
     });
   }
-}; 
+};

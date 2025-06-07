@@ -1,6 +1,6 @@
 /**
- * LLM控制器
- * 用于与大语言模型交互
+ * 公共路由控制器
+ * 用于与大语言模型交互等功能
  */
 const ApiService = require('../services/apiService');
 
@@ -8,11 +8,11 @@ const ApiService = require('../services/apiService');
 const apiService = new ApiService();
 
 /**
- * 调用通义千问模型
+ * 调用模型
  * @param {Object} req 请求对象
  * @param {Object} res 响应对象
  */
-exports.callQwen = async (req, res) => {
+exports.chat = async (req, res) => {
   try {
     const { prompt } = req.body;
     
@@ -24,13 +24,13 @@ exports.callQwen = async (req, res) => {
       });
     }
     
-    // 调用通义千问模型
-    const result = await apiService.callQwenModel(prompt);
+    // 调用模型
+    const result = await apiService.chat2OpenAPI(prompt);
     
     if (!result.success) {
       return res.status(500).json({
         success: false,
-        error: result.error || '调用通义千问模型失败'
+        error: result.error || '调用大模型失败'
       });
     }
     
@@ -41,10 +41,10 @@ exports.callQwen = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('调用通义千问模型失败:', error);
+    console.error('调用大模型失败:', error);
     res.status(500).json({
       success: false,
-      error: '调用通义千问模型失败，请稍后重试'
+      error: '调用大模型失败，请稍后重试'
     });
   }
 };

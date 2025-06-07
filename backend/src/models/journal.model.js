@@ -43,6 +43,12 @@ const Journal = sequelize.define('journal', {
       model: Book,
       key: 'id'
     }
+  },
+  header: {
+    type: DataTypes.STRING(256),
+    allowNull: true,
+    defaultValue: '/journalHeader/default.png',
+    comment: '书评头图路径'
   }
 }, {
   tableName: 'journal',
