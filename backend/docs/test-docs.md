@@ -139,9 +139,9 @@
   }
   ```
 
-### 6. 修改密码
+### 6. 修改密码✅
 
-- **URL**: `/account/change-password`✅
+- **URL**: `/account/change-password`
 - **方法**: `POST`
 - **认证**: 需要 Bearer Token
 - **请求体**:
@@ -181,7 +181,7 @@
   }
   ```
 
-### 2. 更新个人资料
+### 2. 更新个人资料✅
 
 - **URL**: `/profile`
 - **方法**: `PUT`
@@ -210,7 +210,7 @@
   }
   ```
 
-### 3. 上传头像
+### 3. 上传头像✅
 
 - **URL**: `/profile/upload-photo`
 - **方法**: `POST`
@@ -221,15 +221,16 @@
   {
     "success": true,
     "message": "头像上传成功",
+    "userId": 10,
     "data": {
-      "path": "/profilePhoto/文件名.jpg"
+        "path": "/profilePhoto/1749285931536-Eqy4gfCD.png"
     }
   }
   ```
 
-### 4. 获取用户统计信息
+### 4. 获取用户统计信息✅
 
-- **URL**: `/profile/stats/:id?`（不提供 id 时获取自己的统计信息）
+- **URL**: `/profile/stats/get/:id?`（不提供 id 时获取自己的统计信息）
 - **方法**: `GET`
 - **认证**: 需要 Bearer Token
 - **响应**:
@@ -247,7 +248,7 @@
 
 ## 书籍相关
 
-### 1. 获取书籍列表
+### 1. 获取书籍列表✅
 
 - **URL**: `/book`
 - **方法**: `GET`
@@ -278,7 +279,7 @@
   }
   ```
 
-### 2. 获取书籍详情
+### 2. 获取书籍详情✅
 
 - **URL**: `/book/:id`
 - **方法**: `GET`
@@ -306,7 +307,7 @@
   }
   ```
 
-### 3. 获取书籍类型列表
+### 3. 获取书籍类型列表✅
 
 - **URL**: `/book/types`
 - **方法**: `GET`
@@ -325,11 +326,11 @@
   }
   ```
 
-### 4. 创建书籍（需要管理员权限）
+### 4. 创建书籍（需要管理员/教师权限）✅
 
 - **URL**: `/book`
 - **方法**: `POST`
-- **认证**: 需要 Bearer Token（管理员）
+- **认证**: 需要 Bearer Token（管理员/教师）
 - **请求体**:
   ```json
   {
@@ -355,19 +356,52 @@
     "success": true,
     "message": "书籍创建成功",
     "data": {
-      "id": 1,
-      "isbn": "9787020002207",
-      "title": "三国演义",
-      "author": "罗贯中"
+        "local_path": "/bookLocal/default.pdf",
+        "book_icon": "/book_icon/default.png",
+        "id": 7,
+        "isbn": "9787020002207",
+        "title": "三国演义",
+        "origin_title": "",
+        "subtitle": "",
+        "author": "罗贯中",
+        "page": 500,
+        "publish_date": "1990-01-01T00:00:00.000Z",
+        "publisher": "人民文学出版社",
+        "description": "《三国演义》是中国古典四大名著之一...",
+        "douban_score": 9.5,
+        "douban_id": "1234567",
+        "bangumi_score": 9,
+        "bangumi_id": "7654321",
+        "type": "文学"
     }
   }
   ```
 
-### 5. 更新书籍（需要管理员权限）
+  ⚠️ 注意，完整的上传流程应该是：先填写信息获取返回的id，通过id添加书籍的内容和图片
+
+### 5. 上传书籍内容/文件 ✅
+
+- **URL**: `/book/upload/:id`
+- **方法**: `POST`
+- **认证**: 需要 Bearer Token（管理员/教师）
+- **请求体**: FormData 格式，字段名为 `book`
+- **响应**:
+  ```json
+  {
+    "success": true,
+    "message": "书籍上传成功",
+    "data": {
+        "id": "7",
+        "path": "/bookLocal/1749293013641-78TgDick.pdf"
+    }
+  }
+  ```
+
+### 6. 更新书籍（需要管理员/教师权限）✅
 
 - **URL**: `/book/:id`
 - **方法**: `PUT`
-- **认证**: 需要 Bearer Token（管理员）
+- **认证**: 需要 Bearer Token（管理员/教师）
 - **请求体**: 同创建书籍
 - **响应**:
   ```json
@@ -375,19 +409,32 @@
     "success": true,
     "message": "书籍更新成功",
     "data": {
-      "id": 1,
-      "isbn": "9787020002207",
-      "title": "三国演义",
-      "author": "罗贯中"
+        "id": 7,
+        "isbn": "9787020002207",
+        "title": "三国演义-新",
+        "origin_title": "",
+        "subtitle": "",
+        "author": "罗贯中",
+        "page": 500,
+        "publish_date": "1990-01-01T00:00:00.000Z",
+        "publisher": "人民文学出版社",
+        "description": "《三国演义》是中国古典四大名著之一...",
+        "douban_score": 9.5,
+        "douban_id": "1234567",
+        "bangumi_score": 9,
+        "bangumi_id": "7654321",
+        "type": "文学",
+        "local_path": "/bookLocal/1749293013641-78TgDick.pdf",
+        "book_icon": "/book_icon/default.png"
     }
   }
   ```
 
-### 6. 删除书籍（需要管理员权限）
+### 7. 删除书籍（需要管理员/教师权限）✅
 
 - **URL**: `/book/:id`
 - **方法**: `DELETE`
-- **认证**: 需要 Bearer Token（管理员）
+- **认证**: 需要 Bearer Token（管理员/教师）
 - **响应**:
   ```json
   {
@@ -396,9 +443,9 @@
   }
   ```
 
-### 7. 上传书籍封面（需要管理员权限）
+### 8. 上传书籍封面（需要管理员权限）✅
 
-- **URL**: `/book/upload-cover`
+- **URL**: `/book/upload-cover/:id`
 - **方法**: `POST`
 - **认证**: 需要 Bearer Token（管理员）
 - **请求体**: FormData 格式，字段名为 `cover`

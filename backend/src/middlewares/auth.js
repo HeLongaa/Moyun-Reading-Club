@@ -55,6 +55,34 @@ const isAdmin = (req, res, next) => {
 };
 
 /**
+ * 检查是否为管理员
+ * @param {Object} req 请求对象
+ * @param {Object} res 响应对象
+ * @param {Function} next 下一个中间件
+ */
+const isTeacher = (req, res, next) => {
+  if (req.user && req.user.role === 'teacher') {
+    next();
+  } else {
+    return res.status(403).json({
+      success: false,
+      error: '需要教师权限'
+    });
+  }
+};
+
+const isAdminOrTeacher = (req, res, next) => {
+  if (req.user && (req.user.role === 'admin' || req.user.role === 'teacher')) {
+    next();
+  } else {
+    return res.status(403).json({
+      success: false,
+      error: '需要管理员或教师权限'
+    });
+  }
+};
+
+/**
  * 生成JWT令牌
  * @param {Object} user 用户信息
  * @returns {string} JWT令牌
@@ -76,5 +104,7 @@ const generateToken = (user) => {
 module.exports = {
   verifyToken,
   isAdmin,
+  isTeacher,
+  isAdminOrTeacher,
   generateToken
 };

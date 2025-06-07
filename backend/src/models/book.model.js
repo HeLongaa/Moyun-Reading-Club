@@ -99,6 +99,19 @@ const Book = sequelize.define('book', {
     ),
     allowNull: true,
     comment: '图书类型（参考自《中国图书馆图书分类法》）'
+  },
+  // [Add] 本地存储路径
+  local_path: {
+    type: DataTypes.STRING(256),
+    allowNull: true,
+    defaultValue: '/bookLocal/default.pdf',
+    comment: '书籍的本地存储路径'
+  },
+  book_icon: {
+    type: DataTypes.STRING(256),
+    allowNull: true,
+    defaultValue: '/book_icon/default.png',
+    comment: '书籍封面图标'
   }
 }, {
   tableName: 'book',

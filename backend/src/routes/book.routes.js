@@ -2,7 +2,7 @@
  * 书籍路由
  */
 const express = require('express');
-const { verifyToken, isAdmin } = require('../middlewares/auth');
+const { verifyToken, isAdmin, isAdminOrTeacher } = require('../middlewares/auth');
 const bookController = require('../controllers/book.controller');
 const FileManager = require('../services/fileManager');
 
@@ -15,15 +15,22 @@ router.get('/types', bookController.getBookTypes);
 router.get('/:id', bookController.getBookById);
 
 // 需要管理员权限的路由
-router.post('/', verifyToken, isAdmin, bookController.createBook);
-router.put('/:id', verifyToken, isAdmin, bookController.updateBook);
-router.delete('/:id', verifyToken, isAdmin, bookController.deleteBook);
+router.post('/', verifyToken, isAdminOrTeacher, bookController.createBook);
+router.put('/:id', verifyToken, isAdminOrTeacher, bookController.updateBook);
+router.delete('/:id', verifyToken, isAdminOrTeacher, bookController.deleteBook);
 
-// 上传书籍封面
+// 上传书籍
 router.post(
-  '/upload-cover',
+  '/upload/:id',
   verifyToken,
-  isAdmin,
+  isAdminOrTeacher,
+  fileManager.getBookUploader().single('book'),
+  bookController.uploadBook
+);
+router.post(
+  '/upload-cover/:id',
+  verifyToken,
+  isAdminOrTeacher,
   fileManager.getBookCoverUploader().single('cover'),
   bookController.uploadBookCover
 );

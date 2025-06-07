@@ -24,6 +24,7 @@ router.post(
 );
 
 // 获取用户统计信息
-router.get('/stats/:id?', verifyToken, profileController.getUserStats);
+router.get('/stats/get/:id?', verifyToken, profileController.getProfileStats);
+// router.get('/stat/:id?', verifyToken, profileController.getUserStats);
 
 module.exports = router; 
