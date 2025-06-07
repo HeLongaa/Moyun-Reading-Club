@@ -17,18 +17,20 @@ class FileManager {
     
     // 定义允许的文件类型
     this.allowedImageTypes = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
-    
+    this.allowedbookTypes = ['.txt', '.pdf', '.epub', '.mobi', '.azw3'];
     // 初始化各类文件的存储路径
     this.profilePhotoPath = path.join(this.storagePath, 'profilePhoto');
     this.bookCoverPath = path.join(this.storagePath, 'bookCover');
     this.journalHeaderPath = path.join(this.storagePath, 'journalHeader');
     this.groupIconPath = path.join(this.storagePath, 'groupIcon');
-    
+    this.bookLocalPath = path.join(this.storagePath, 'bookLocal');
+
     // 确保各类文件的存储目录存在
     ensureDirectoryExists(this.profilePhotoPath);
     ensureDirectoryExists(this.bookCoverPath);
     ensureDirectoryExists(this.journalHeaderPath);
     ensureDirectoryExists(this.groupIconPath);
+    ensureDirectoryExists(this.bookLocalPath);
   }
   
   /**
@@ -89,6 +91,20 @@ class FileManager {
       fileFilter: this.fileFilter(this.allowedImageTypes),
       limits: {
         fileSize: 5 * 1024 * 1024 // 5MB
+      }
+    });
+  }
+
+  /**
+   * 获取书籍上传中间件
+   * @returns {multer.Multer} Multer中间件
+   */
+  getBookUploader() {
+    return multer({
+      storage: this.configureStorage(this.bookLocalPath),
+      fileFilter: this.fileFilter(this.allowedbookTypes),
+      limits: {
+        fileSize: 50 * 1024 * 1024 // 50MB
       }
     });
   }

@@ -103,12 +103,20 @@ exports.uploadProfilePhoto = async (req, res) => {
     
     // 文件路径
     const filePath = `/profilePhoto/${req.file.filename}`;
+    const userId = req.user.id;
+    
+    // 用户头像路径上传到数据库
+    const user = await User.findByPk(userId);
+    await user.update({
+      avatar_path: filePath
+    });
     
     res.status(200).json({
       success: true,
       message: '头像上传成功',
+      userId: user.id,
       data: {
-        path: filePath
+        path: filePath  // 使用新上传的文件路径
       }
     });
   } catch (error) {
@@ -125,13 +133,12 @@ exports.uploadProfilePhoto = async (req, res) => {
  * @param {Object} req 请求对象
  * @param {Object} res 响应对象
  */
-exports.getUserStats = async (req, res) => {
+exports.getProfileStats = async (req, res) => {
   try {
     const userId = req.params.id || req.user.id;
     
-    // 查询用户
     const user = await User.findByPk(userId, {
-      attributes: ['id', 'account', 'signature', 'role']
+      attributes: ['id', 'account', 'signature', 'email', 'telephone', 'role']
     });
     
     if (!user) {
@@ -140,16 +147,12 @@ exports.getUserStats = async (req, res) => {
         error: '用户不存在'
       });
     }
-    
-    // 查询用户的书评数量
-    const journalCount = await user.countJournals();
-    
-    // 查询用户加入的圈子数量
-    const groupCount = await user.countGroups();
-    
-    // 查询用户发表的讨论数量
-    const discussionCount = await user.countDiscussions();
-    
+    const [journalCount, groupCount, discussionCount] = await Promise.all([
+      user.countJournals().catch(() => 0),
+      user.countGroups().catch(() => 0),
+      user.countDiscussions().catch(() => 0)
+    ]);
+
     res.status(200).json({
       success: true,
       data: {
@@ -157,7 +160,8 @@ exports.getUserStats = async (req, res) => {
           id: user.id,
           account: user.account,
           signature: user.signature,
-          role: user.role
+          role: user.role,
+          avatar_path: user.avatar_path
         },
         stats: {
           journalCount,
@@ -166,11 +170,17 @@ exports.getUserStats = async (req, res) => {
         }
       }
     });
+
   } catch (error) {
-    console.error('获取用户统计信息失败:', error);
+    console.error('获取用户统计信息失败:', {
+      error: error.message,
+      stack: error.stack,
+      userId: req.params.id
+    });
+    
     res.status(500).json({
       success: false,
       error: '获取用户统计信息失败，请稍后重试'
     });
   }
-}; 
+};

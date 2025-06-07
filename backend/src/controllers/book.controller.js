@@ -162,6 +162,46 @@ exports.createBook = async (req, res) => {
 };
 
 /**
+ * 上传书籍
+ * @param {Object} req 请求对象
+ * @param {Object} res 响应对象
+ */
+
+exports.uploadBook = async (req, res) => {
+  try {
+    
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        error: '请选择要上传的书籍'
+      });
+    }
+
+    // 文件路径
+    const filePath = `/bookLocal/${req.file.filename}`;
+    const { id } = req.params;
+    const book = await Book.findByPk(id);
+    await book.update({
+      local_path: filePath
+    });
+    res.status(200).json({
+      success: true,
+      message: '书籍上传成功',
+      data: {
+        id: id,
+        path: filePath
+      }
+    });
+  } catch (error) {
+    console.error('上传书籍失败:', error);
+    res.status(500).json({
+      success: false,
+      error: '上传书籍失败，请稍后重试'
+    });
+  }
+};
+
+/**
  * 更新书籍
  * @param {Object} req 请求对象
  * @param {Object} res 响应对象
@@ -287,10 +327,13 @@ exports.uploadBookCover = async (req, res) => {
         error: '请选择要上传的封面'
       });
     }
-    
+    const { id } = req.params;
+    const book = await Book.findByPk(id);
     // 文件路径
     const filePath = `/bookCover/${req.file.filename}`;
-    
+    await book.update({
+      book_icon: filePath
+    });
     res.status(200).json({
       success: true,
       message: '封面上传成功',

@@ -41,6 +41,13 @@ const User = sequelize.define('user', {
     allowNull: false,
     defaultValue: 'student',
     comment: '身份组'
+  },
+  // [Add] 头像路径
+  avatar_path: {
+    type: DataTypes.STRING(256),
+    allowNull: true,
+    defaultValue: '/profilePhoto/default.png',
+    comment: '头像'
   }
 }, {
   tableName: 'user',

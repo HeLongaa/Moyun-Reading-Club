@@ -23,6 +23,9 @@ app.use(cors());
 // 静态文件服务
 const staticPath = process.env.STATIC_FOLDER || path.join(__dirname, '../../static');
 app.use(express.static(staticPath));
+app.use('/bookCover', express.static(path.join(__dirname, '../static/bookCover')));
+app.use('/bookLocal', express.static(path.join(__dirname, '../static/bookLocal')));
+app.use('/profilePhoto', express.static(path.join(__dirname, '../static/profilePhoto')));
 
 // 安全检查中间件
 app.use(securityCheck);
@@ -40,4 +43,4 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`服务器运行在 http://localhost:${PORT}`);
 });
 
-module.exports = app; 
+module.exports = app;
