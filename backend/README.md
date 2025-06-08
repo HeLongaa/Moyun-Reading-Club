@@ -34,24 +34,71 @@
 
 ```
 backend/
-├── src/                    # 源代码目录
-│   ├── config/             # 配置文件
-│   ├── controllers/        # 控制器
-│   ├── middlewares/        # 中间件
-│   ├── models/             # 数据库模型
-│   ├── routes/             # 路由
-│   ├── services/           # 服务
-│   ├── utils/              # 工具函数
-│   ├── app.js              # 应用程序配置
-│   └── index.js            # 入口文件
-├── static/                 # 静态文件目录
-│   ├── bookCover/          # 书籍封面
-│   ├── groupIcon/          # 圈子图标
-│   ├── journalHeader/      # 书评头图
-│   └── profilePhoto/       # 用户头像
-├── .env                    # 环境变量
-└── package.json            # 项目依赖
+├── .env                    # 环境变量配置文件
+├── .env.example           # 环境变量示例文件
+├── package.json          # 项目依赖配置
+├── README.md            # 项目说明文档
+├── docs/               # 文档目录
+│   ├── api-docs.md    # API接口文档
+│   └── test-docs.md   # 测试文档
+├── src/               # 源代码目录
+│   ├── app.js        # 应用主文件
+│   ├── index.js      # 入口文件
+│   ├── config/       # 配置文件目录
+│   │   └── database.js  # 数据库配置
+│   ├── controllers/  # 控制器目录
+│   │   ├── account.controller.js   # 账号相关控制器
+│   │   ├── book.controller.js      # 书籍相关控制器
+│   │   ├── chat.controller.js      # 聊天相关控制器
+│   │   ├── error.controller.js     # 错误处理控制器
+│   │   ├── group.controller.js     # 圈子相关控制器
+│   │   ├── homepage.controller.js  # 首页相关控制器
+│   │   ├── journal.controller.js   # 书评相关控制器
+│   │   ├── message.controller.js   # 消息相关控制器
+│   │   ├── profile.controller.js   # 个人资料控制器
+│   │   └── public.controller.js    # 公共接口控制器
+│   ├── middlewares/  # 中间件目录
+│   │   ├── auth.js   # 认证中间件
+│   │   └── security.js # 安全检查中间件
+│   ├── models/       # 数据模型目录
+│   │   ├── book.model.js          # 书籍模型
+│   │   ├── chat.model.js          # 聊天模型
+│   │   ├── group.model.js         # 圈子模型
+│   │   ├── groupUser.model.js     # 圈子成员模型
+│   │   ├── groupDiscussion.model.js # 圈子讨论模型
+│   │   ├── journal.model.js       # 书评模型
+│   │   ├── user.model.js          # 用户模型
+│   │   └── index.js               # 模型关联配置
+│   ├── routes/       # 路由目录
+│   │   ├── account.routes.js      # 账号相关路由
+│   │   ├── book.routes.js         # 书籍相关路由
+│   │   ├── group.routes.js        # 圈子相关路由
+│   │   └── index.js               # 路由聚合
+│   ├── services/     # 服务层目录
+│   │   ├── apiService.js          # API服务
+│   │   └── fileManager.js         # 文件管理服务
+│   └── utils/        # 工具函数目录
+│       └── initDB.js              # 数据库初始化脚本
+└── static/          # 静态资源目录
+    ├── bookCover/   # 书籍封面存储
+    ├── bookLocal/   # 电子书文件存储
+    ├── groupIcon/   # 圈子图标存储
+    ├── journalHeader/ # 书评头图存储
+    └── profilePhoto/  # 用户头像存储
 ```
+
+### 目录说明
+
+- **docs/**: 存放项目文档，包括 API 文档和测试文档
+- **src/**: 主要源代码目录
+  - **config/**: 配置文件，包括数据库等配置
+  - **controllers/**: 控制器层，处理具体的业务逻辑
+  - **middlewares/**: 中间件，处理认证等通用功能
+  - **models/**: 数据模型定义，使用 Sequelize ORM
+  - **routes/**: 路由定义，处理 API 路由
+  - **services/**: 服务层，处理第三方服务集成
+  - **utils/**: 工具函数和辅助脚本
+- **static/**: 静态资源存储目录，存放上传的文件
 
 ## 功能模块
 
@@ -63,7 +110,7 @@ backend/
 - 聊天系统：用户之间的私聊
 - 消息通知：书评评论、讨论回复等通知
 - 搜索功能：搜索书籍、书评、用户、圈子
-- LLM集成：通义千问模型集成，提供书籍推荐、书评生成等功能
+- LLM集成：通义千问模型集成，提供书籍推荐、书评生成等功能[开发中]
 
 ## 安装和运行
 
@@ -84,17 +131,17 @@ npm install
 
 ```
 # 服务器配置
-PORT=5000
+PORT=5001
 
 # 数据库配置
-DB_HOST=localhost
-DB_PORT=3306
-DB_NAME=moyun
-DB_USER=root
-DB_PASSWORD=your_password
+DB_HOST=mysql3.sqlpub.com
+DB_PORT=3308
+DB_NAME=helong_dev
+DB_USER=root_helong
+DB_PASSWORD=L9vm8MbcP2Ln72PU
 
 # JWT配置
-JWT_SECRET=your_jwt_secret
+JWT_SECRET=L9vm8MbcP2Ln72PU
 JWT_EXPIRES_IN=7d
 
 # 邮件配置
@@ -106,16 +153,15 @@ MAIL_PASS=your_email_password
 # 文件存储配置
 STATIC_FOLDER=../static
 
-# 通义千问API配置
-QWEN_API_KEY=your_qwen_api_key
-QWEN_API_URL=https://api.example.com/qwen
+# OpenAI API配置
+OPENAI_API_KEY=sk-ux2aiFl2FRglGqDSv7zhDUxWiuK4cm9bR1e8M7QoyEnS73gh
+OPENAI_API_URL=https://api.helong.online/v1
+OPENAI_API_MODEL=deepseek-ai/DeepSeek-R1-Distill-Qwen-7B
+
 ```
 
 ### 初始化数据库
 
-```bash
-npm run init-db
-```
 
 ### 启动服务器
 
@@ -131,99 +177,9 @@ npm run dev
 npm start
 ```
 
-## API文档[ ⚠️ 简略 ]
+## API文档[]
 
-### 账号相关
-
-- `POST /api/account/register` - 注册新用户
-- `POST /api/account/login` - 用户登录
-- `POST /api/account/request-password-reset` - 请求重置密码
-- `POST /api/account/reset-password` - 重置密码
-- `GET /api/account/me` - 获取当前用户信息
-- `POST /api/account/change-password` - 修改密码
-
-### 个人资料相关
-
-- `GET /api/profile/:id?` - 获取用户个人资料
-- `PUT /api/profile` - 更新个人资料
-- `POST /api/profile/upload-photo` - 上传头像
-- `GET /api/profile/stats/:id?` - 获取用户统计信息
-
-### 书籍相关
-
-- `GET /api/book` - 获取书籍列表
-- `GET /api/book/:id` - 获取书籍详情
-- `POST /api/book` - 创建书籍
-- `PUT /api/book/:id` - 更新书籍
-- `DELETE /api/book/:id` - 删除书籍
-- `POST /api/book/upload-cover` - 上传书籍封面
-- `GET /api/book/types` - 获取书籍类型列表
-
-### 书评相关
-
-- `GET /api/journal` - 获取书评列表
-- `GET /api/journal/:id` - 获取书评详情
-- `POST /api/journal` - 创建书评
-- `PUT /api/journal/:id` - 更新书评
-- `DELETE /api/journal/:id` - 删除书评
-- `GET /api/journal/:id/comments` - 获取书评评论
-- `POST /api/journal/:id/comments` - 添加评论
-- `DELETE /api/journal/:id/comments/:commentId` - 删除评论
-- `POST /api/journal/:id/like` - 点赞/取消点赞书评
-- `POST /api/journal/upload-header` - 上传书评头图
-
-### 圈子相关
-
-- `GET /api/group` - 获取圈子列表
-- `GET /api/group/:id` - 获取圈子详情
-- `POST /api/group` - 创建圈子
-- `PUT /api/group/:id` - 更新圈子
-- `DELETE /api/group/:id` - 删除圈子
-- `POST /api/group/:id/join` - 加入圈子
-- `POST /api/group/:id/leave` - 退出圈子
-- `GET /api/group/:id/members` - 获取圈子成员列表
-- `GET /api/group/:id/discussions` - 获取圈子讨论列表
-- `POST /api/group/:id/discussions` - 创建讨论
-- `GET /api/group/:id/discussions/:discussionId` - 获取讨论详情
-- `POST /api/group/:id/discussions/:discussionId/reply` - 回复讨论
-- `DELETE /api/group/:id/discussions/:discussionId` - 删除讨论
-- `POST /api/group/upload-icon` - 上传圈子图标
-
-### 聊天相关
-
-- `GET /api/chat` - 获取聊天列表
-- `GET /api/chat/:partnerId` - 获取与指定用户的聊天记录
-- `POST /api/chat` - 发送消息
-- `PUT /api/chat/:messageId/read` - 标记消息为已读
-- `GET /api/chat/unread/count` - 获取未读消息数量
-
-### 消息通知相关
-
-- `GET /api/message/unread` - 获取未读消息
-- `PUT /api/message/journal-comment/:commentId/read` - 标记书评评论为已读
-- `PUT /api/message/discussion-reply/:replyId/read` - 标记圈子讨论回复为已读
-- `PUT /api/message/read-all` - 标记所有消息为已读
-
-### 搜索相关
-
-- `GET /api/search` - 综合搜索
-
-### 首页相关
-
-- `GET /api/homepage` - 获取首页数据
-
-### 错误信息相关
-
-- `GET /api/error/:code` - 获取错误信息
-- `POST /api/error` - 创建错误信息
-- `PUT /api/error/:code` - 更新错误信息
-- `DELETE /api/error/:code` - 删除错误信息
-
-### LLM相关
-
-- `POST /api/llm/qwen` - 调用通义千问模型
-- `POST /api/llm/recommend-books` - 书籍推荐
-- `POST /api/llm/generate-journal` - 书评生成 
+[API文档](./docs/api-docs.md)
 
 ## 贡献指南
 
