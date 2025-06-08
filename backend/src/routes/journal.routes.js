@@ -24,7 +24,7 @@ router.post('/:id/like', verifyToken, journalController.toggleLike);
 
 // 上传书评头图
 router.post(
-  '/upload-header',
+  '/upload-header/:id',
   verifyToken,
   fileManager.getJournalHeaderUploader().single('header'),
   journalController.uploadJournalHeader

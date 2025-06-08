@@ -26,6 +26,7 @@ app.use(express.static(staticPath));
 app.use('/bookCover', express.static(path.join(__dirname, '../static/bookCover')));
 app.use('/bookLocal', express.static(path.join(__dirname, '../static/bookLocal')));
 app.use('/profilePhoto', express.static(path.join(__dirname, '../static/profilePhoto')));
+app.use('/groupIcon', express.static(path.join(__dirname, '../static/groupIcon')));
 
 // 安全检查中间件
 app.use(securityCheck);

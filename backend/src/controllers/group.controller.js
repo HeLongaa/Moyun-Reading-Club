@@ -34,7 +34,7 @@ exports.getGroups = async (req, res) => {
         {
           model: User,
           as: 'founder',
-          attributes: ['id', 'account', 'signature']
+          attributes: ['id', 'account', 'signature', 'avatar_path']
         }
       ],
       offset,
@@ -99,7 +99,7 @@ exports.getGroupById = async (req, res) => {
         {
           model: User,
           as: 'founder',
-          attributes: ['id', 'account', 'signature']
+          attributes: ['id', 'account', 'signature', 'avatar_path']
         }
       ]
     });
@@ -184,7 +184,8 @@ exports.createGroup = async (req, res) => {
     await GroupUser.create({
       user_id: founder_id,
       group_id: group.id,
-      join_time: new Date()
+      join_time: new Date(),
+      stats: 'agree'
     });
     
     res.status(201).json({
@@ -333,22 +334,35 @@ exports.joinGroup = async (req, res) => {
     });
     
     if (existingMembership) {
+      if (existingMembership.stats == 'agree') {
+        return res.status(400).json({
+          success: true,
+          message: '您已经是该圈子的成员'
+        });
+      } else if (existingMembership.stats == 'wait') {
+        return res.status(400).json({
+          success: false,
+          error: '您的加入申请正在审核中，请耐心等待'
+        });
+      }
       return res.status(400).json({
         success: false,
-        error: '您已经是该圈子的成员'
+        error: '您已被拒绝加入该圈子，请联系圈子管理员'
       });
+      
     }
     
     // 加入圈子
     await GroupUser.create({
       group_id: id,
       user_id,
-      join_time: new Date()
+      join_time: new Date(),
+      stats: 'wait' // 初始状态为等待审核
     });
-    
+    // 发送通知给圈子管理员（需要添加通知服务）
     res.status(200).json({
       success: true,
-      message: '成功加入圈子'
+      message: '成功加入圈子，等待管理员审核'
     });
   } catch (error) {
     console.error('加入圈子失败:', error);
@@ -439,12 +453,12 @@ exports.getGroupMembers = async (req, res) => {
     
     // 查询成员
     const { count, rows: memberships } = await GroupUser.findAndCountAll({
-      where: { group_id: id },
+      where: { group_id: id, stats: 'agree' }, // 只查询已同意加入的成员
       include: [
         {
           model: User,
           as: 'user',
-          attributes: ['id', 'account', 'signature', 'role']
+          attributes: ['id', 'account', 'signature', 'role', 'avatar_path']
         }
       ],
       offset,
@@ -597,7 +611,7 @@ exports.createDiscussion = async (req, res) => {
     
     // 获取发帖人信息
     const poster = await User.findByPk(poster_id, {
-      attributes: ['id', 'account', 'signature']
+      attributes: ['id', 'account', 'signature', 'avatar_path']
     });
     
     res.status(201).json({
@@ -760,7 +774,7 @@ exports.replyToDiscussion = async (req, res) => {
     
     // 获取回复作者信息
     const author = await User.findByPk(author_id, {
-      attributes: ['id', 'account', 'signature']
+      attributes: ['id', 'account', 'signature', 'avatar_path']
     });
     
     res.status(201).json({
@@ -851,10 +865,31 @@ exports.uploadGroupIcon = async (req, res) => {
         error: '请选择要上传的图标'
       });
     }
-    
+    const id = req.params.id;
+    const group = await Group.findByPk(id);
+    if (!group) {
+      return res.status(404).json({
+        success: false,
+        error: '圈子不存在'
+      });
+    } else if (group.group_icon && group.group_icon !== '/groupIcon/default.png') {
+      // 删除旧图标
+      await fileManager.deleteFile(group.group_icon);
+    }
+    // 检查用户是否为圈子创建者或管理员
+    if (group.founder_id !== req.user.id && req.user.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        error: '您没有权限上传图标'
+      });
+    }
+
     // 文件路径
     const filePath = `/groupIcon/${req.file.filename}`;
-    
+    await group.update({
+      group_icon: filePath
+    });
+
     res.status(200).json({
       success: true,
       message: '图标上传成功',
@@ -870,3 +905,119 @@ exports.uploadGroupIcon = async (req, res) => {
     });
   }
 }; 
+
+/**
+ * 获取待审核的成员列表
+ * @param {Object} req 请求对象
+ * @param {Object} res 响应对象
+ */
+
+exports.getPendingMembers = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // 检查圈子是否存在
+    const group = await Group.findByPk(id);
+    if (!group) {
+      return res.status(404).json({
+        success: false,
+        error: '圈子不存在'
+      });
+    }
+    
+    // 检查用户是否为圈子创建者或管理员
+    if (group.founder_id !== req.user.id && req.user.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        error: '您没有权限查看待审核成员'
+      });
+    }
+    
+    // 查询待审核成员
+    const pendingMembers = await GroupUser.findAll({
+      where: {
+        group_id: id,
+        state: 'wait'
+      },
+      include: [
+        {
+          model: User,
+          as: 'user',
+          attributes: ['id', 'account', 'signature', 'avatar_path']
+        }
+      ],
+      order: [['join_time', 'DESC']]
+    });
+    
+    res.status(200).json({
+      success: true,
+      data: pendingMembers.map(membership => ({
+        ...membership.toJSON(),
+        user: membership.user.toJSON()
+      }))
+    });
+  } catch (error) {
+    console.error('获取待审核成员列表失败:', error);
+    res.status(500).json({
+      success: false,
+      error: '获取待审核成员列表失败，请稍后重试'
+    });
+  }
+};
+
+exports.approveMember = async (req, res) => {
+  try {
+    const { id, userId } = req.params;
+    const isOno = req.body.isOno; // 是否同意加入，true为同意，false为拒绝
+    
+    // 检查圈子是否存在
+    const group = await Group.findByPk(id);
+    if (!group) {
+      return res.status(404).json({
+        success: false,
+        error: '圈子不存在'
+      });
+    }
+    
+    // 检查用户是否为圈子创建者或管理员
+    if (group.founder_id !== req.user.id && req.user.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        error: '您没有权限审核成员'
+      });
+    }
+    
+    // 查找待审核成员
+    const membership = await GroupUser.findOne({
+      where: {
+        group_id: id,
+        user_id: userId,
+        state: 'wait'
+      }
+    });
+    
+    if (!membership) {
+      return res.status(404).json({
+        success: false,
+        error: '待审核成员不存在'
+      });
+    }
+    // 更新成员状态为同意/拒绝
+    await membership.update({ state: isOno ? 'agree' : 'refuse' });
+    
+    res.status(200).json({
+      success: true,
+      message: isOno ? '成员审核通过' : '成员审核不通过',
+      data: {
+        user_id: userId,
+        state: isOno ? 'agree' : 'refuse'
+      }
+    });
+  } catch (error) {
+    console.error('审核成员失败:', error);
+    res.status(500).json({
+      success: false,
+      error: '审核成员失败，请稍后重试'
+    });
+  }
+};

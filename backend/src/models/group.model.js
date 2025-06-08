@@ -34,7 +34,13 @@ const Group = sequelize.define('group', {
     type: DataTypes.TEXT,
     allowNull: true,
     comment: '对该圈子的介绍'
-  }
+  },
+  group_icon: {
+    type: DataTypes.STRING(256),
+    allowNull: true,
+    defaultValue: '/groupIcon/default.png',
+    comment: '圈子图标的路径'
+  },
 }, {
   tableName: 'group',
   timestamps: false,

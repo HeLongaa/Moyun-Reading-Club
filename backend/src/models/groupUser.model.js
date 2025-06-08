@@ -29,6 +29,12 @@ const GroupUser = sequelize.define('group_user', {
     type: DataTypes.DATE,
     allowNull: false,
     comment: '加入时间'
+  },
+  state: {
+    type: DataTypes.ENUM('agree', 'wait', 'refuse'),
+    allowNull: false,
+    defaultValue: 'wait',
+    comment: '成员状态'
   }
 }, {
   tableName: 'group_user',
