@@ -83,8 +83,8 @@ exports.recommendBooks = async (req, res) => {
     
     prompt += '请给出书名、作者和简短推荐理由。';
     
-    // 调用通义千问模型
-    const result = await apiService.callQwenModel(prompt);
+    // 调用模型
+    const result = await apiService.chat2OpenAPI(prompt);
     
     if (!result.success) {
       return res.status(500).json({

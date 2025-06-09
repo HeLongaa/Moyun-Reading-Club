@@ -100,9 +100,14 @@ exports.login = async (req, res) => {
         error: '用户名和密码不能为空'
       });
     }
-    
-    // 查找用户
-    const user = await User.findOne({ where: { account } });
+    // 检查是否是邮箱格式
+    const emailRegex = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;
+    const isEmail = emailRegex.test(account);
+
+    // 根据是否为邮箱格式查找用户
+    const user = await User.findOne({ 
+      where: isEmail ? { email: account } : { account }
+    });
     if (!user) {
       return res.status(401).json({
         success: false,
@@ -145,6 +150,14 @@ exports.login = async (req, res) => {
 };
 
 /**
+ * 生成6位数验证码
+ * @returns {string} 验证码
+ */
+function generateVerificationCode() {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+/**
  * 请求重置密码
  * @param {Object} req 请求对象
  * @param {Object} res 响应对象
@@ -167,25 +180,26 @@ exports.requestPasswordReset = async (req, res) => {
       // 出于安全考虑，即使用户不存在也返回成功
       return res.status(200).json({
         success: true,
-        message: '如果该邮箱已注册，您将收到一封包含密码重置链接的邮件'
+        message: '如果该邮箱已注册，您将收到一封包含密码重置验证的邮件'
       });
     }
     
-    // 生成重置令牌
-    const resetToken = crypto.randomBytes(32).toString('hex');
+    // 生成验证码
+    const verificationCode = generateVerificationCode();
     
-    // 存储令牌，24小时后过期
-    passwordResetTokens[resetToken] = {
+    // 存储验证码，10分钟后过期
+    passwordResetTokens[email] = {
       userId: user.id,
-      expiresAt: Date.now() + 24 * 60 * 60 * 1000 // 24小时
+      code: verificationCode,
+      expiresAt: Date.now() + 10 * 60 * 1000 // 10分钟
     };
     
-    // 发送重置邮件
-    await mailService.sendPasswordResetEmail(email, resetToken, user.account);
+    // 发送包含验证码的邮件
+    await mailService.sendVerificationCode(email, verificationCode, user.account);
     
     res.status(200).json({
       success: true,
-      message: '如果该邮箱已注册，您将收到一封包含密码重置链接的邮件'
+      message: '如果该邮箱已注册，您将收到一封包含验证码的邮件'
     });
   } catch (error) {
     console.error('请求重置密码失败:', error);
@@ -203,22 +217,22 @@ exports.requestPasswordReset = async (req, res) => {
  */
 exports.resetPassword = async (req, res) => {
   try {
-    const { token, newPassword } = req.body;
+    const { email, code, newPassword } = req.body;
     
     // 检查必要字段
-    if (!token || !newPassword) {
+    if (!email || !code || !newPassword) {
       return res.status(400).json({
         success: false,
-        error: '令牌和新密码不能为空'
+        error: '邮箱、验证码和新密码不能为空'
       });
     }
     
-    // 验证令牌
-    const resetInfo = passwordResetTokens[token];
-    if (!resetInfo || resetInfo.expiresAt < Date.now()) {
+    // 验证验证码
+    const resetInfo = passwordResetTokens[email];
+    if (!resetInfo || resetInfo.code !== code || resetInfo.expiresAt < Date.now()) {
       return res.status(400).json({
         success: false,
-        error: '无效或已过期的令牌'
+        error: '验证码无效或已过期'
       });
     }
     
@@ -237,8 +251,8 @@ exports.resetPassword = async (req, res) => {
     // 更新密码
     await user.update({ password: hashedPassword });
     
-    // 删除令牌
-    delete passwordResetTokens[token];
+    // 删除验证码记录
+    delete passwordResetTokens[email];
     
     res.status(200).json({
       success: true,
@@ -341,4 +355,4 @@ exports.changePassword = async (req, res) => {
       error: '修改密码失败，请稍后重试'
     });
   }
-}; 
+};
