@@ -7,7 +7,15 @@ const config = require('../utils/index');
 
 class ApiService {
   constructor() {
-    this.openAIConfig = config.openai;
+    // 添加配置检查和默认值
+    if (!config || !config.OPENAI) {
+      throw new Error('OpenAI configuration is missing');
+    }
+    this.openAIConfig = {
+      api_key: config.OPENAI.api_key,
+      api_url: config.OPENAI.api_url || 'https://api.openai.com',
+      model: config.OPENAI.model || 'gpt-3.5-turbo'
+    };
   }
 
   /**
@@ -46,7 +54,7 @@ class ApiService {
           model,
           messages: [
             {
-              role: "developer",
+              role: "assistant",
               content: "你是一个有帮助的助手。"
             },
             {
