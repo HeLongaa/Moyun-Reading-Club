@@ -104,7 +104,12 @@ exports.uploadProfilePhoto = async (req, res) => {
     // 文件路径
     const filePath = `/profilePhoto/${req.file.filename}`;
     const userId = req.user.id;
-    
+
+    if (user.avatar_path !== "/profilePhoto/default_avatar.png") {
+      // 删除旧头像文件
+      await fileManager.deleteFile(user.avatar_path);
+    }
+
     // 用户头像路径上传到数据库
     const user = await User.findByPk(userId);
     await user.update({
