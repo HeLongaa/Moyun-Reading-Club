@@ -289,13 +289,43 @@ exports.deleteGroup = async (req, res) => {
         error: '您没有权限删除这个圈子'
       });
     }
-    
-    // 删除圈子
-    await group.destroy();
+
+    // 使用事务确保数据一致性
+    await sequelize.transaction(async (t) => {
+      // 1. 删除圈子下的所有讨论回复
+      await GroupDiscussionReply.destroy({
+        where: {
+          discussion_id: {
+            [Op.in]: sequelize.literal(`(SELECT id FROM group_discussions WHERE group_id = ${id})`)
+          }
+        },
+        transaction: t
+      });
+
+      // 2. 删除圈子下的所有讨论
+      await GroupDiscussion.destroy({
+        where: { group_id: id },
+        transaction: t
+      });
+
+      // 3. 删除圈子的所有成员
+      await GroupUser.destroy({
+        where: { group_id: id },
+        transaction: t
+      });
+
+      // 4. 删除圈子本身
+      await group.destroy({ transaction: t });
+    });
+
+    if (group.group_icon && group.group_icon !== '/groupIcon/default.png') {
+      // 删除圈子图标文件
+      await fileManager.deleteFile(group.group_icon);
+    }
     
     res.status(200).json({
       success: true,
-      message: '圈子删除成功'
+      message: '圈子及其所有相关内容已删除成功'
     });
   } catch (error) {
     console.error('删除圈子失败:', error);
