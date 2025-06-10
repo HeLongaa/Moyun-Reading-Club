@@ -8,12 +8,19 @@ class MailService {
   constructor() {
     const emailConfig = queryConfig('E-Mail');
     
+    // 添加调试日志
+    console.log('邮箱配置:', {
+      host: emailConfig.Host,
+      port: emailConfig.Port,
+      username: emailConfig.Username,
+      hasPassword: !!emailConfig.Password
+    });
+    
     // 检查邮箱配置是否完整
     this.isConfigured = emailConfig.Host && 
                        emailConfig.Port && 
                        emailConfig.Username && 
-                       emailConfig.Password && 
-                       emailConfig.Sender;
+                       emailConfig.Password;
     
     if (this.isConfigured) {
       // 创建邮件传输对象
@@ -27,7 +34,12 @@ class MailService {
         }
       });
     } else {
-      console.warn('邮箱服务未完全配置，部分功能可能不可用');
+      console.warn('邮箱配置不完整:', {
+        missingHost: !emailConfig.Host,
+        missingPort: !emailConfig.Port,
+        missingUsername: !emailConfig.Username,
+        missingPassword: !emailConfig.Password
+      });
     }
   }
   
@@ -62,32 +74,24 @@ class MailService {
   }
   
   /**
-   * 发送密码重置邮件
-   * @param {string} to 收件人
-   * @param {string} resetToken 重置令牌
-   * @param {string} username 用户名
-   * @returns {Promise<boolean>} 是否发送成功
+   * 发送验证码邮件
+   * @param {string} to 收件人邮箱
+   * @param {string} code 验证码
+   * @param {string} account 用户账号
    */
-  async sendPasswordResetEmail(to, resetToken, username) {
-    const subject = '墨韵读书交流平台 - 密码重置';
-    const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:5000'}/reset-password?token=${resetToken}`;
-    
-    const html = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 5px;">
-        <h2 style="color: #333; text-align: center;">密码重置</h2>
-        <p>亲爱的 ${username}：</p>
-        <p>我们收到了您的密码重置请求。请点击下面的链接重置您的密码：</p>
-        <p style="text-align: center;">
-          <a href="${resetUrl}" style="display: inline-block; padding: 10px 20px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 5px;">重置密码</a>
-        </p>
-        <p>如果您没有请求重置密码，请忽略此邮件。</p>
-        <p>此链接将在24小时后失效。</p>
-        <p>谢谢！</p>
-        <p>墨韵读书交流平台团队</p>
-      </div>
+  async sendVerificationCode(to, code, account) {
+    const subject = '密码重置验证码';
+    const content = `
+      <h1>密码重置验证码</h1>
+      <p>亲爱的 ${account}：</p>
+      <p>您正在尝试重置密码。您的验证码是：</p>
+      <h2 style="color: #1a73e8;">${code}</h2>
+      <p>此验证码将在10分钟后过期。如果这不是您本人的操作，请忽略此邮件。</p>
+      <p>谢谢！</p>
+      <p>墨韵读书会团队</p>
     `;
     
-    return this.sendMail(to, subject, html);
+    return this.sendMail(to, subject, content);
   }
   
   /**
@@ -120,4 +124,4 @@ class MailService {
   }
 }
 
-module.exports = MailService; 
+module.exports = MailService;

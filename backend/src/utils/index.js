@@ -32,11 +32,11 @@ const queryConfig = (section, key = null) => {
       ProfilePhoto: process.env.ADMIN_PROFILE_PHOTO || ''
     },
     'E-Mail': {
-      Host: process.env.EMAIL_HOST || 'smtp.126.com',
-      Port: parseInt(process.env.EMAIL_PORT || '465'),
-      Username: process.env.EMAIL_USER || '',
-      Password: process.env.EMAIL_PASS || '',
-      Sender: process.env.EMAIL_SENDER || ''
+      Host: process.env.MAIL_HOST || 'smtp.126.com',
+      Port: parseInt(process.env.MAIL_PORT || '465'),
+      Username: process.env.MAIL_USER || '',
+      Password: process.env.MAIL_PASS || '',
+      Sender: process.env.MAIL_SENDER || 'MoYun_Admin <send@helong.online>', 
     },
     Path: {
       TemplateFolder: process.env.TEMPLATE_FOLDER || '/templates',
@@ -45,9 +45,9 @@ const queryConfig = (section, key = null) => {
       ErrorImageSource: process.env.ERROR_IMAGE_SOURCE || 'HTTP Cats'
     },
     OPENAI: {
-      api_url: process.env.OPENAI_API_URL || 'https://api.deepseek.com/v1/chat/completions',
+      api_url: process.env.OPENAI_API_URL || 'https://api.openai.com',
       api_key: process.env.OPENAI_API_KEY || '',
-      model: process.env.OPENAI_MODEL || 'deepseek-r1'
+      model: process.env.OPENAI_MODEL || 'gpt-3.5-turbo'
     }
   };
 
@@ -117,5 +117,10 @@ module.exports = {
   generateRandomString,
   ensureDirectoryExists,
   getFileExtension,
-  isAllowedFileType
-}; 
+  isAllowedFileType,
+  OPENAI: {
+    api_key: process.env.OPENAI_API_KEY,
+    api_url: process.env.OPENAI_API_URL || 'https://api.openai.com',
+    model: process.env.OPENAI_MODEL || 'gpt-3.5-turbo'
+  }
+};

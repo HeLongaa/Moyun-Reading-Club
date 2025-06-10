@@ -55,21 +55,13 @@ exports.getHomepageData = async (req, res) => {
     const poemResult = await apiService.getTodayPoem();
     const poem = poemResult.success ? poemResult.data : null;
     
-    // 获取天气信息（如果提供了城市）
-    let weather = null;
-    if (req.query.city) {
-      const weatherResult = await apiService.getWeather(req.query.city);
-      weather = weatherResult.success ? weatherResult.data : null;
-    }
-    
     res.status(200).json({
       success: true,
       data: {
         featuredJournals,
         popularBooks,
         activeGroups,
-        poem,
-        weather
+        poem
       }
     });
   } catch (error) {
