@@ -1,39 +1,35 @@
 <template>
   <AuthLayout>
     <div class="login-container">
-      <h2>欢迎回到墨云读书会</h2>
+      <h2>欢迎登录墨云读书会</h2>
       <form @submit.prevent="handleSubmit">
         <div class="form-group">
-          <label>邮箱</label>
+          <label>账号/邮箱</label>
           <input
-              v-model="form.email"
-              type="email"
-              required
-              placeholder="请输入注册邮箱"
+            v-model="form.account"
+            required
+            placeholder="请输入账号或邮箱"
           >
         </div>
-
         <div class="form-group">
           <label>密码</label>
           <input
-              v-model="form.password"
-              type="password"
-              required
-              placeholder="请输入密码"
+            v-model="form.password"
+            type="password"
+            required
+            placeholder="请输入密码"
           >
         </div>
-
+        <div v-if="error" class="error-msg">{{ error }}</div>
         <button
-            type="submit"
-            :disabled="loading"
-            class="primary-btn"
+          type="submit"
+          :disabled="loading"
+          class="primary-btn"
         >
-          {{ loading ? '登录中...' : '立即登录' }}
+          {{ loading ? '登录中...' : '登录' }}
         </button>
-
         <div class="auth-links">
           <router-link to="/register">没有账号？立即注册</router-link>
-          <router-link to="/forgot-password">忘记密码？</router-link>
         </div>
       </form>
     </div>
@@ -46,33 +42,35 @@ import { mapActions } from 'vuex'
 
 export default {
   components: { AuthLayout },
-
   data() {
     return {
       form: {
-        email: '',
+        account: '',
         password: ''
       },
       loading: false,
-      error: null
+      error: ''
     }
   },
-
   methods: {
     ...mapActions('auth', ['login']),
-
     async handleSubmit() {
       this.loading = true
-      this.error = null
-
+      this.error = ''
       try {
         await this.login(this.form)
-        this.$router.push(this.$route.query.redirect || '/')
-      } catch (error) {
-        this.error = error.response?.data?.message || '登录失败，请检查输入'
+        this.$router.push('/')
+      } catch (e) {
+        this.error = e.response?.data?.message || '登录失败'
       } finally {
         this.loading = false
       }
+    }
+  },
+  mounted() {
+    // 已登录自动跳转主界面
+    if (this.$store.getters['auth/isAuthenticated']) {
+      this.$router.push('/')
     }
   }
 }
@@ -87,37 +85,9 @@ export default {
   border-radius: 8px;
   box-shadow: 0 2px 12px rgba(0,0,0,0.1);
 }
-
-.form-group {
-  margin-bottom: 1.5rem;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 500;
-}
-
-.form-group input {
-  width: 100%;
-  padding: 0.8rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-}
-
-.primary-btn {
-  width: 100%;
-  padding: 1rem;
-  background: #2563eb;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.auth-links {
-  margin-top: 1.5rem;
-  display: flex;
-  justify-content: space-between;
+.error-msg {
+  color: #e74c3c;
+  margin-bottom: 1rem;
+  text-align: center;
 }
 </style>

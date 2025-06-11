@@ -6,7 +6,7 @@
         <div class="form-group">
           <label>用户名</label>
           <input
-              v-model="form.username"
+              v-model="form.account"
               required
               placeholder="请输入用户名"
           >
@@ -20,6 +20,31 @@
               required
               placeholder="请输入有效邮箱"
           >
+        </div>
+
+        <div class="form-group">
+          <label>手机号</label>
+          <input
+              v-model="form.telephone"
+              required
+              placeholder="请输入手机号"
+          >
+        </div>
+
+        <div class="form-group">
+          <label>个性签名</label>
+          <input
+              v-model="form.signature"
+              placeholder="一句话介绍自己（可选）"
+          >
+        </div>
+
+        <div class="form-group">
+          <label>身份</label>
+          <select v-model="form.role" required>
+            <option value="student">学生</option>
+            <option value="teacher">教师</option>
+          </select>
         </div>
 
         <div class="form-group">
@@ -41,6 +66,8 @@
               placeholder="再次输入密码"
           >
         </div>
+
+        <div v-if="error" class="error-msg">{{ error }}</div>
 
         <button
             type="submit"
@@ -64,48 +91,39 @@ import { mapActions } from 'vuex'
 
 export default {
   components: { AuthLayout },
-
   data() {
     return {
       form: {
-        username: '',
-        email: '',
+        account: '',
         password: '',
-        password2: ''
+        email: '',
+        telephone: '',
+        signature: '',
+        role: 'student'
       },
       loading: false,
-      error: null
+      error: ''
     }
   },
-
   methods: {
     ...mapActions('auth', ['register']),
-
     async handleSubmit() {
-      if (this.form.password !== this.form.password2) {
-        this.error = '两次输入的密码不一致'
-        return
-      }
-
       this.loading = true
-      this.error = null
-
+      this.error = ''
       try {
-        await this.register({
-          username: this.form.username,
-          email: this.form.email,
-          password: this.form.password
-        })
-
-        this.$router.push({
-          path: '/login',
-          query: { registered: 'success' }
-        })
-      } catch (error) {
-        this.error = error.response?.data?.message || '注册失败，请稍后重试'
+        await this.register(this.form)
+        this.$router.push('/')
+      } catch (e) {
+        this.error = e.response?.data?.message || '注册失败'
       } finally {
         this.loading = false
       }
+    }
+  },
+  mounted() {
+    // 已登录自动跳转主界面
+    if (this.$store.getters['auth/isAuthenticated']) {
+      this.$router.push('/')
     }
   }
 }
@@ -119,6 +137,12 @@ export default {
   background: white;
   border-radius: 8px;
   box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+}
+
+.error-msg {
+  color: #e74c3c;
+  margin-bottom: 1rem;
+  text-align: center;
 }
 
 /* 复用登录页样式 */

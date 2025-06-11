@@ -1,7 +1,7 @@
 /**
  * 书评控制器
  */
-const { Op } = require('sequelize');
+const { Op, sequelize } = require('sequelize');
 const { Journal, JournalComment, JournalLike, User, Book } = require('../models');
 const FileManager = require('../services/fileManager');
 
@@ -300,12 +300,33 @@ exports.deleteJournal = async (req, res) => {
       });
     }
     
-    // 删除书评
-    await journal.destroy();
+    // 使用事务确保数据一致性
+    await sequelize.transaction(async (t) => {
+      // 1. 删除书评的所有评论
+      await JournalComment.destroy({
+        where: { journal_id: id },
+        transaction: t
+      });
+
+      // 2. 删除书评的所有点赞
+      await JournalLike.destroy({
+        where: { journal_id: id },
+        transaction: t
+      });
+
+      // 3. 删除书评本身
+      await journal.destroy({ transaction: t });
+    });
+
+    if (journal.header) {
+      // 4. 删除书评头图文件
+      const headerPath = `${journal.header}`;
+      await fileManager.deleteFile(headerPath);
+    }
     
     res.status(200).json({
       success: true,
-      message: '书评删除成功'
+      message: '书评及其相关内容已删除成功'
     });
   } catch (error) {
     console.error('删除书评失败:', error);

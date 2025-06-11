@@ -1,8 +1,8 @@
 /**
  * 书籍控制器
  */
-const { Op } = require('sequelize');
-const { Book } = require('../models');
+const { Op, sequelize } = require('sequelize');
+const { Book, Journal, JournalComment, JournalLike } = require('../models');
 const FileManager = require('../services/fileManager');
 
 // 创建文件管理器实例
@@ -298,12 +298,65 @@ exports.deleteBook = async (req, res) => {
       });
     }
     
-    // 删除书籍
-    await book.destroy();
+    // 使用事务确保数据一致性
+    await sequelize.transaction(async (t) => {
+      // 1. 查找与该书籍关联的所有书评
+      const journals = await Journal.findAll({
+        where: { book_id: id },
+        transaction: t
+      });
+      
+      // 获取所有书评ID
+      const journalIds = journals.map(journal => journal.id);
+      
+      if (journalIds.length > 0) {
+        // 2. 删除这些书评的所有评论
+        await JournalComment.destroy({
+          where: { 
+            journal_id: { [Op.in]: journalIds } 
+          },
+          transaction: t
+        });
+        
+        // 3. 删除这些书评的所有点赞
+        await JournalLike.destroy({
+          where: { 
+            journal_id: { [Op.in]: journalIds } 
+          },
+          transaction: t
+        });
+        
+        // 4. 删除所有书评
+        await Journal.destroy({
+          where: { book_id: id },
+          transaction: t
+        });
+      }
+      
+      // 5. 删除书籍本身
+      await book.destroy({ transaction: t });
+    });
+    
+    // 删除相关文件（如果有）
+    if (book.book_icon) {
+      try {
+        await fileManager.deleteFile(book.book_icon);
+      } catch (fileError) {
+        console.error('删除书籍封面文件失败:', fileError);
+      }
+    }
+    
+    if (book.local_path) {
+      try {
+        await fileManager.deleteFile(book.local_path);
+      } catch (fileError) {
+        console.error('删除书籍文件失败:', fileError);
+      }
+    }
     
     res.status(200).json({
       success: true,
-      message: '书籍删除成功'
+      message: '书籍及其相关内容已删除成功'
     });
   } catch (error) {
     console.error('删除书籍失败:', error);
@@ -371,4 +424,4 @@ exports.getBookTypes = async (req, res) => {
       error: '获取书籍类型列表失败，请稍后重试'
     });
   }
-}; 
+};

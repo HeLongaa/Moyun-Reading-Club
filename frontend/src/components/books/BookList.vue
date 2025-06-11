@@ -11,6 +11,7 @@
           :key="book.id"
           :book="book"
           @share="showSharePanel(book)"
+          @click="$emit('select', book)"
       />
     </div>
 
@@ -19,13 +20,17 @@
         :total="totalPages"
         @change="changePage"
     />
+
+    <div v-if="displayedBooks.length === 0" class="empty">暂无书籍</div>
   </div>
 </template>
 
 <script>
 import { mapActions, mapState } from 'vuex'
+import BookCard from './BookCard.vue'
 
 export default {
+  components: { BookCard },
   data() {
     return {
       currentPage: 1,
@@ -89,5 +94,17 @@ export default {
   display: flex;
   gap: 1rem;
   margin-bottom: 2rem;
+}
+
+.book-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.empty {
+  color: #aaa;
+  text-align: center;
+  margin: 2rem 0;
 }
 </style>

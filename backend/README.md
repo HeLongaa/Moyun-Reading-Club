@@ -162,6 +162,8 @@ OPENAI_API_MODEL=deepseek-ai/DeepSeek-R1-Distill-Qwen-7B
 
 ### 初始化数据库
 
+[ddl.sql](ddl.sql) 是不包含示例数据的数据库结构
+[ddl_demo](ddl_demo.sql) 是包含示例数据的数据库结构文件，(管理员密码为passwd，只有密码是秘文存储，其余信息都是明文写在数据库的)
 
 ### 启动服务器
 

@@ -1,100 +1,87 @@
 <template>
-  <MainLayout>
-    <div class="book-detail">
-      <div class="book-header">
-        <img :src="book.cover" class="book-cover" alt="封面">
-        <div class="book-info">
-          <h1>{{ book.title }}</h1>
-          <p class="author">作者：{{ book.author }}</p>
-          <div class="meta">
-            <span class="publisher">出版社：{{ book.publisher }}</span>
-            <span class="isbn">ISBN：{{ book.isbn }}</span>
-          </div>
-          <ShareButton :book="book" />
+  <div class="book-detail" v-if="book">
+    <div class="detail-header">
+      <img :src="book.book_icon || '/bookCover/default.png'" class="detail-cover" alt="封面" />
+      <div class="detail-info">
+        <h2>{{ book.title }}</h2>
+        <div class="meta">
+          <span>作者：{{ book.author }}</span>
+          <span>出版社：{{ book.publisher }}</span>
+          <span>类型：{{ book.type }}</span>
         </div>
-      </div>
-
-      <div class="book-content">
-        <Tabs>
-          <Tab title="简介">
-            <div class="description">{{ book.description }}</div>
-          </Tab>
-          <Tab title="书评">
-            <CommentSection :targetId="book.id" targetType="book" />
-          </Tab>
-          <Tab title="相关圈子">
-            <CircleList :circles="relatedCircles" />
-          </Tab>
-        </Tabs>
+        <div class="desc">{{ book.description }}</div>
       </div>
     </div>
-  </MainLayout>
+    <div class="detail-extra">
+      <div>ISBN：{{ book.isbn }}</div>
+      <div>页数：{{ book.page }}</div>
+      <div>出版日期：{{ book.publish_date ? book.publish_date.slice(0,10) : '' }}</div>
+      <div>豆瓣评分：{{ book.douban_score }}</div>
+      <div>Bangumi评分：{{ book.bangumi_score }}</div>
+    </div>
+  </div>
+  <div v-else class="empty">未找到该书籍</div>
 </template>
-
 <script>
-import { mapActions, mapState } from 'vuex'
-
+import { getBook } from '@/api/books.api'
 export default {
-  props: ['id'],
-
-  computed: {
-    ...mapState('books', ['currentBook']),
-    book() {
-      return this.currentBook || {}
-    },
-    relatedCircles() {
-      return this.$store.state.circles.availableCircles.filter(
-          c => c.tags.some(t => this.book.tags.includes(t))
-      )
+  data() {
+    return {
+      book: null
     }
   },
-
   async created() {
-    await this.fetchBookDetail(this.id)
-  },
-
-  methods: {
-    ...mapActions('books', ['fetchBookDetail'])
+    const id = this.$route.params.id
+    const res = await getBook(id)
+    this.book = res.data.data || null
   }
 }
 </script>
-
 <style scoped>
-.book-header {
+.book-detail {
+  max-width: 700px;
+  margin: 2rem auto;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  padding: 2rem;
+}
+.detail-header {
   display: flex;
   gap: 2rem;
-  margin-bottom: 2rem;
 }
-
-.book-cover {
-  width: 240px;
-  height: 320px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+.detail-cover {
+  width: 120px;
+  height: 160px;
+  object-fit: cover;
+  border-radius: 4px;
+  border: 1px solid #eee;
 }
-
-.book-info {
+.detail-info {
   flex: 1;
 }
-
-.author {
-  font-size: 1.2em;
-  color: #666;
-  margin: 0.5rem 0;
-}
-
 .meta {
-  display: flex;
-  gap: 1rem;
-  margin: 1rem 0;
   color: #888;
+  font-size: 0.95em;
+  margin: 0.5em 0 1em 0;
+  display: flex;
+  gap: 1.5em;
 }
-
-.book-content {
-  margin-top: 2rem;
+.desc {
+  margin-top: 1em;
+  color: #333;
 }
-
-.description {
-  line-height: 1.8;
-  white-space: pre-wrap;
+.detail-extra {
+  margin-top: 2em;
+  color: #666;
+  font-size: 0.95em;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2em;
+}
+.empty {
+  color: #aaa;
+  text-align: center;
+  margin: 2rem 0;
 }
 </style>

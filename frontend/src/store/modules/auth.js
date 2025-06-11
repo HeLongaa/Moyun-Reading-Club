@@ -1,3 +1,5 @@
+import authApi from '@/api/auth.api'
+
 const state = {
     user: null,
     accessToken: localStorage.getItem('access_token') || null,
@@ -32,60 +34,52 @@ const mutations = {
 const actions = {
     async login({ commit }, credentials) {
         try {
-            const response = await this.$authApi.login(credentials)
-            commit('SET_TOKEN', {
-                access: response.data.access,
-                refresh: response.data.refresh
-            })
-
+            const response = await authApi.login(credentials)
+            // 登录接口返回token和用户信息
+            const token = response.data.token || response.data.access || response.data
+            commit('SET_TOKEN', { access: token, refresh: '' })
             // 获取用户信息
-            const profile = await this.$authApi.getUserProfile()
+            const profile = await authApi.getUserProfile()
             commit('SET_USER', profile.data)
-
             return true
         } catch (error) {
             commit('LOGOUT')
             throw error
         }
     },
-
     async register({ commit }, userData) {
         try {
-            const response = await this.$authApi.register(userData)
-            return response.data
+            const response = await authApi.register(userData)
+            // 注册成功自动登录
+            const token = response.data.token || response.data.access || response.data
+            commit('SET_TOKEN', { access: token, refresh: '' })
+            const profile = await authApi.getUserProfile()
+            commit('SET_USER', profile.data)
+            return true
         } catch (error) {
+            commit('LOGOUT')
             throw error
         }
     },
-
     async logout({ commit }) {
-        try {
-            await this.$authApi.logout()
-        } finally {
-            commit('LOGOUT')
-        }
+        await authApi.logout()
+        commit('LOGOUT')
     },
-
-    async refreshToken({ commit, state }) {
-        try {
-            const response = await this.$authApi.refreshToken({
-                refresh: state.refreshToken
-            })
-            commit('SET_TOKEN', {
-                access: response.data.access,
-                refresh: state.refreshToken
-            })
-            return response.data.access
-        } catch (error) {
-            commit('LOGOUT')
-            throw error
-        }
+    async getUserProfile({ commit }) {
+        const profile = await authApi.getUserProfile()
+        commit('SET_USER', profile.data)
     }
+}
+
+const getters = {
+    isAuthenticated: state => !!state.accessToken,
+    user: state => state.user
 }
 
 export default {
     namespaced: true,
     state,
     mutations,
-    actions
+    actions,
+    getters
 }
