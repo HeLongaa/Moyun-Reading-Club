@@ -44,11 +44,38 @@ export default {
     justify-content: center;
 
     .home-button {
-      @include primary-button;
+      /* TODO: 如需按钮样式，请在全局 scss 定义 @mixin primary-button */
+      background: #409eff;
+      color: #fff;
+      border: none;
+      padding: 0.5rem 1.5rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 1rem;
+      text-decoration: none;
+      transition: background 0.2s;
+
+      &:hover {
+        background: #337ecc;
+      }
     }
 
     .back-button {
-      @include secondary-button;
+      /* TODO: 如需按钮样式，请在全局 scss 定义 @mixin secondary-button */
+      background: #fff;
+      color: #409eff;
+      border: 1px solid #409eff;
+      padding: 0.5rem 1.5rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 1rem;
+      text-decoration: none;
+      transition: background 0.2s, color 0.2s;
+
+      &:hover {
+        background: #409eff;
+        color: #fff;
+      }
     }
   }
 }

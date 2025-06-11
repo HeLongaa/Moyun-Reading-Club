@@ -1,13 +1,11 @@
-<script lang="ts">
-import {defineComponent} from 'vue'
-
-export default defineComponent({
-  name: "App"
-})
+<script setup lang="ts">
+import MainLayout from '@/layout/MainLayout.vue'
 </script>
 
 <template>
-
+  <MainLayout>
+    <router-view />
+  </MainLayout>
 </template>
 
 <style scoped>

@@ -1,23 +1,9 @@
-## 前端
-2025.5.18
-完成前端框架搭建，
-用户认证系统（登录/注册）
+## 墨韵读书会前端结构说明（2025.6.11 更新）
 
-学习圈创建/加入功能
+### 项目简介
+本前端基于 Vue3 + Vuex4 + Vue Router4，采用模块化、分层设计，支持教师/学生角色区分，功能包括用户认证、主界面、个人中心、书籍、圈子、书评、讨论、聊天、通知、搜索等，API与后端文档一致。
 
-图书浏览与分享功能
-
-评论与互动系统
-
-实时通知功能
-
-个人中心与权限管理
-完成用户认证系统（登录/注册），学习圈创建/加入功能初步实现
-图书浏览与分享功能,评论与互动系统,实时通知功能
-
-但目前对接口等，vue的运行有点不太理解
-
-### 前端框架v1
+### 主要目录结构
 ```plain text
 frontend/
 ├── public/                  # 静态资源
@@ -25,130 +11,123 @@ frontend/
 │   └── index.html
 │
 ├── src/
-│   ├── api/                 # API服务层
-│   │   ├── auth.api.js          # 认证接口
-│   │   ├── books.api.js         # 图书接口
-│   │   ├── circles.api.js       # 学习圈接口
-│   │   ├── comments.api.js      # 评论接口
-│   │   ├── notifications.api.js # 通知接口
-│   │   └── websocket.js         # WebSocket服务
+│   ├── api/                 # API服务层（所有后端接口请求）
+│   │   ├── auth.api.js
+│   │   ├── books.api.js
+│   │   ├── circles.api.js
+│   │   ├── comments.api.js
+│   │   ├── notifications.api.js
+│   │   ├── profile.api.js
+│   │   ├── search.api.js
+│   │   └── websocket.js
 │   │
-│   ├── assets/              # 静态资源
-│   │   ├── scss/            # 样式系统
-│   │   │   ├── _variables.scss  # 设计变量
-│   │   │   ├── _mixins.scss     # 公共混合
-│   │   │   ├── components/      # 组件样式
-│   │   │   │   ├── _notifications.scss
-│   │   │   │   ├── _comments.scss
-│   │   │   │   └── _books.scss
-│   │   │   └── themes/          # 主题系统
-│   │   └── images/           # 图片
+│   ├── assets/              # 静态资源（图片、样式等）
+│   │   ├── scss/            # 样式系统（_variables.scss/_mixins.scss/组件样式等）
+│   │   └── images/
 │   │
-│   ├── components/          # 组件库
+│   ├── components/          # 组件库（按功能模块细分）
 │   │   ├── auth/            # 认证相关
-│   │   │   ├── RoleGuard.vue        # 角色守卫
-│   │   │   └── AuthProvider.vue     # 认证上下文
-│   │   │
 │   │   ├── books/           # 图书模块
-│   │   │   ├── BookCard.vue
-│   │   │   ├── BookSearcher.vue
-│   │   │   ├── ShareToCircle.vue
-│   │   │   └── BookList.vue
-│   │   │
 │   │   ├── circles/         # 学习圈系统
-│   │   │   ├── CircleCreator.vue    # 创建圈子
-│   │   │   ├── MemberList.vue       # 成员列表
-│   │   │   ├── CircleActivity.vue   # 圈子动态
-│   │   │   ├── CircleJoinForm.vue   # 加入圈子
-│   │   │   └── PostEditor.vue       # 动态信息流
-│   │   │
 │   │   ├── comments/        # 评论系统
-│   │   │   ├── CommentTree.vue      # 树形评论
-│   │   │   ├── CommentNode.vue      # 新增
-│   │   │   ├── CommentEditor.vue    # MD编辑器
-│   │   │   ├── ReactionSystem.vue   # 互动系统
-│   │   │   └── MentionList.vue      # @提及组件
-│   │   │
 │   │   └── ui/              # 基础UI
-│   │       ├── AppLayout.vue        # 主布局
-│   │       ├── VirtualScroll.vue    # 虚拟滚动
-│   │       └── NotificationSystem/  # 通知系统
-│   │           ├── NotificationBell.vue
-│   │           ├── NotificationList.vue
-│   │           └── NotificationIcon.vue
 │   │
-│   ├── layouts/             # 页面布局
-│   │   ├── MainLayout.vue
-│   │   └── AuthLayout.vue
+│   ├── layouts/             # 页面布局（如 MainLayout.vue, AuthLayout.vue）
 │   │
 │   ├── router/              # 路由系统
 │   │   ├── guards/          # 路由守卫
-│   │   │   ├── authGuard.js      # 认证守卫
-│   │   │   └── roleGuard.js      # 角色守卫
-│   │   ├── routes/          # 模块化路由
-│   │   │   ├── authRoutes.js
-│   │   │   ├── circlesRoutes.js
-│   │   │   ├── booksRoutes.js
-│   │   │   ├── commentsRoutes.js # 新增
-│   │   │   └── notificationsRoutes.js # 新增
+│   │   ├── routes/          # 各功能模块路由
 │   │   └── index.js         # 路由入口
 │   │
-│   ├── store/               # Vuex状态管理（
-│   │   ├── modules/         # 模块化store
-│   │   │   ├── auth.js      # 认证状态
-│   │   │   ├── books.js     # 图书数据
-│   │   │   ├── circles.js   # 圈子数据
-│   │   │   ├── comments.js  # 评论数据
-│   │   │   └── notifications.js # 通知数据
+│   ├── store/               # Vuex状态管理
+│   │   ├── modules/         # 各功能模块store
 │   │   └── index.js         # Store主文件
 │   │
 │   ├── utils/               # 工具库
-│   │   ├── auth.js          # 认证工具
 │   │   ├── api.js           # 请求封装
+│   │   ├── auth.js          # 认证工具
 │   │   ├── cache.js         # 缓存管理
-│   │   ├── pusher.js        # 实时通信
-│   │   └── notifications.js # 新增通知工具
+│   │   └── notifications.js # 通知工具
 │   │
-│   ├── views/               # 主视图
-│   │   ├── Auth/            # 认证视图
-│   │   │   ├── Login.vue
-│   │   │   └── Register.vue
-│   │   │
-│   │   ├── Circle/          # 学习圈视图
-│   │   │   ├── CircleHome.vue     # 圈子主页
-│   │   │   ├── Discussion.vue     # 深度讨论
-│   │   │   ├── Library.vue        # 圈子书库
-│   │   │   └── Settings.vue       # 新增
-│   │   │
-│   │   ├── Books/           # 图书视图
-│   │   │   ├── Explore.vue       # 发现图书
-│   │   │   ├── Detail.vue        # 图书详情
-│   │   │   ├── Recommendations.vue # 推荐系统
-│   │   │   └── SharedBooks.vue   # 新增共享书籍
-│   │   │
+│   ├── views/               # 主视图页面
+│   │   ├── Auth/            # 登录/注册
+│   │   ├── Circle/          # 圈子相关
+│   │   ├── Books/           # 图书相关
 │   │   ├── Profile/         # 个人中心
-│   │   │   ├── Student.vue      # 学生主页
-│   │   │   ├── Mentor.vue       # 导师面板
-│   │   │   └── Notifications.vue # 新增通知中心
-│   │   │
-│   │   └── Error/           # 新增错误页
-│   │       ├── Forbidden.vue
-│   │       └── NotFound.vue
+│   │   ├── Error/           # 错误页
+│   │   └── Comments/        # 评论详情等
 │   │
-│   ├── App.vue              # 根组件（
+│   ├── App.vue              # 根组件
 │   └── main.js              # 应用入口
 │
-├── tests/                   # 测试配置
+├── tests/                   # 测试
 │   ├── unit/                # 单元测试
-│   │   ├── components/      # 组件测试
-│   │   └── store/           # 状态管理测试
 │   └── e2e/                 # 端到端测试
-│       └── spec/            # 测试用例
 │
-├── .env                     # 环境变量
-├── .env.development         # 开发环境
-├── .env.production          # 生产环境
+├── .env*                    # 环境变量
 ├── .eslintrc.js             # 代码规范
 ├── babel.config.js          # Babel配置
 └── vue.config.js            # Vue CLI配置
 ```
+
+### 主要功能模块
+- 用户认证（登录/注册/权限控制）
+- 主界面（首页/导航/推荐/热门/诗词）
+- 个人中心（资料、密码、头像、统计）
+- 搜索（书籍、书评、用户、圈子）
+- 圈子（列表、详情、成员、讨论、书评、管理）
+- 聊天与通知（WebSocket 实时推送）
+- 书籍与书评（浏览、分享、互动）
+
+### 近期修订说明
+- 明确 layouts、views、components、api、store、router 等分层结构，所有页面和组件按功能归类。
+- layouts 目录下已补充 MainLayout.vue、AuthLayout.vue。
+- views/Comments/Detail.vue 已补充，避免路由和页面找不到。
+- store/modules 目录结构已确认，包含所有核心模块。
+- 修复了 SCSS mixin 缺失导致的样式编译报错，按钮样式已内联补充。
+- 路由、store、API、权限、导航等主流程已打通。
+
+### 常见错误与排查说明
+
+#### 1. 单文件组件缺少 <template> 或 <script>
+- 报错示例：
+  - `At least one <template> or <script> is required in a single file component.`
+- 说明：
+  - 某些 .vue 文件（如 layouts/AuthLayout.vue、MainLayout.vue、views/Comments/Detail.vue）内容为空或格式不完整，需至少包含 <template> 或 <script>。
+- 解决：
+  - 补充基础结构，例如：
+    ```vue
+    <template>
+      <div>内容</div>
+    </template>
+    <script>
+    export default { name: 'xxx' }
+    </script>
+    ```
+
+#### 2. 单文件组件只能有一个 <script>
+- 报错示例：
+  - `Single file component can contain only one <script> element`
+- 说明：
+  - Mentor.vue、Student.vue 等文件中出现多个 <script> 标签，或 <script setup> 与普通 <script> 混用。
+- 解决：
+  - 合并为一个 <script>，或只保留 <script setup>。
+
+#### 3. 模块找不到
+- 报错示例：
+  - `Module not found: Error: Can't resolve './modules' in 'src/store'`
+- 说明：
+  - store/index.js 引用的 modules 目录或文件不存在。
+- 解决：
+  - 确保 src/store/modules 目录存在且包含所有模块文件。
+
+#### 4. 模板解析失败/Unexpected token
+- 报错示例：
+  - `Module parse failed: Unexpected token ... You may need an additional loader to handle the result of these loaders.`
+- 说明：
+  - vue-loader、ts-loader、babel-loader 等依赖版本不兼容，或 .vue 文件语法错误。
+- 解决：
+  - 升级 @vue/cli-service、vue-loader、typescript 等依赖，检查 .vue 文件语法。
+
+---
+如需了解接口调用、Vue3 语法、模块开发等，可参考 src/api、src/views、src/components 及后端 api-docs.md。
