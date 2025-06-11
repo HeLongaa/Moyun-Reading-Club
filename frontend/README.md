@@ -131,3 +131,4 @@ frontend/
 
 ---
 如需了解接口调用、Vue3 语法、模块开发等，可参考 src/api、src/views、src/components 及后端 api-docs.md。
+请仔细参考Moyun-Reading-Club\backend\docs中的两个参考文档
