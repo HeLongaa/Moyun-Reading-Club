@@ -37,6 +37,18 @@ const routes = [
         meta: { requiresAuth: true }
       },
       {
+        path: 'chat',
+        name: 'ChatWindow',
+        component: () => import('@/views/Chat/ChatWindow.vue'),
+        meta: { requiresAuth: true }
+      },
+      {
+        path: 'profile',
+        name: 'ProfileHome',
+        component: () => import('@/views/Profile/Student.vue'),
+        meta: { requiresAuth: true }
+      },
+      {
         path: 'profile/student',
         name: 'ProfileStudent',
         component: () => import('@/views/Profile/Student.vue'),
@@ -46,6 +58,18 @@ const routes = [
         path: 'profile/mentor',
         name: 'ProfileMentor',
         component: () => import('@/views/Profile/Mentor.vue'),
+        meta: { requiresAuth: true }
+      },
+      {
+        path: 'profile/notifications',
+        name: 'ProfileNotifications',
+        component: () => import('@/views/Profile/Notifications.vue'),
+        meta: { requiresAuth: true }
+      },
+      {
+        path: 'profile/edit',
+        name: 'ProfileEdit',
+        component: () => import('@/views/Profile/Edit.vue'),
         meta: { requiresAuth: true }
       },
       {
