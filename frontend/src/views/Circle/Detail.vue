@@ -1,7 +1,7 @@
 <template>
   <div class="circle-detail" v-if="group">
     <div class="circle-header">
-      <img :src="group.icon || defaultIcon" class="circle-icon" />
+      <img :src="group.group_icon || defaultIcon" class="circle-icon" />
       <div class="circle-info">
         <h2>{{ group.name }}</h2>
         <p>{{ group.description }}</p>
@@ -12,6 +12,8 @@
           <button v-if="isMember && !isOwner" @click="quitGroup">退出圈子</button>
           <button v-if="isOwner" @click="goEdit">编辑圈子</button>
           <button v-if="isOwner" @click="deleteGroup" style="background:#e74c3c">删除圈子</button>
+          <router-link to="/circle">返回圈子列表</router-link>
+          <router-link to="/">返回首页</router-link>
         </div>
       </div>
     </div>
@@ -42,17 +44,13 @@ const fetchAll = async () => {
 onMounted(fetchAll)
 const joinGroup = async () => {
   try {
-    await store._modules.root._rawModule.actions['circle/joinGroup']
-      ? store.dispatch('circle/joinGroup', group.value.id)
-      : await store._actions['circle/joinGroup'][0](group.value.id)
+    await store.dispatch('circle/joinGroup', group.value.id)
     pending.value = true
   } catch (e) { alert('加入失败') }
 }
 const quitGroup = async () => {
   try {
-    await store._modules.root._rawModule.actions['circle/quitGroup']
-      ? store.dispatch('circle/quitGroup', group.value.id)
-      : await store._actions['circle/quitGroup'][0](group.value.id)
+    await store.dispatch('circle/quitGroup', group.value.id)
     router.push('/circle')
   } catch (e) { alert('退出失败') }
 }

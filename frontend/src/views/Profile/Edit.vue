@@ -37,23 +37,25 @@ export default {
     }
   },
   computed: {
-    ...mapGetters('profile', ['profile'])
+    ...mapGetters('auth', ['user'])
   },
   created() {
-    if (this.profile) {
-      this.form.email = this.profile.email
-      this.form.telephone = this.profile.telephone
-      this.form.signature = this.profile.signature
+    // 修正：从 auth/user 获取初始信息
+    if (this.user) {
+      this.form.email = this.user.email
+      this.form.telephone = this.user.telephone
+      this.form.signature = this.user.signature
     }
   },
   methods: {
-    ...mapActions('profile', ['updateProfile', 'fetchProfile']),
+    ...mapActions('auth', ['getUserProfile']),
     async handleSubmit() {
       this.loading = true
       this.error = null
       try {
-        await this.updateProfile(this.form)
-        await this.fetchProfile()
+        // 假设有 updateProfile 方法，或用 getUserProfile 刷新
+        await this.$store.dispatch('auth/updateProfile', this.form)
+        await this.getUserProfile()
         this.$router.push('/profile')
       } catch (e) {
         this.error = e.response?.data?.message || '保存失败'

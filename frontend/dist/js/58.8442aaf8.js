@@ -1,0 +1,2 @@
+"use strict";(self["webpackChunkfrontend"]=self["webpackChunkfrontend"]||[]).push([[58],{9058:(n,e,r)=>{r.r(e),r.d(e,{default:()=>d});var t=r(641);const c={class:"profile-container"};function a(n,e,r,a,o,s){return(0,t.uX)(),(0,t.CE)("div",c,e[0]||(e[0]=[(0,t.Lk)("h2",null,"个人中心",-1),(0,t.Lk)("div",null,"Mentor 相关内容开发中",-1)]))}const o={name:"Mentor"};var s=r(6262);const u=(0,s.A)(o,[["render",a],["__scopeId","data-v-59cfc9a5"]]),d=u}}]);
+//# sourceMappingURL=58.8442aaf8.js.map

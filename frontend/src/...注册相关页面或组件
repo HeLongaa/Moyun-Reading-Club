@@ -1,0 +1,23 @@
+VUE_APP_API_BASE_URL=http://localhost:5000
+VUE_APP_WS_URL=ws://localhost:5000/ws
+VUE_APP_ENV=development
+
+this.$axios.post('/api/auth/register', this.form)
+  .then(response => {
+    // 兼容 response 或 response.data 可能为 undefined 的情况
+    const res = (response && response.data) ? response.data : {};
+    // 兼容 status 字段不存在的情况
+    if (typeof res.status !== 'undefined') {
+      if (res.status === 0) {
+        // 注册成功
+      } else {
+        // 注册失败
+      }
+    } else {
+      // 没有 status 字段，假定注册成功或根据实际后端返回结构处理
+      // 注册成功
+    }
+  })
+  .catch(error => {
+    // 错误处理
+  });

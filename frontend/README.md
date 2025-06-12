@@ -87,48 +87,76 @@ frontend/
 - 修复了 SCSS mixin 缺失导致的样式编译报错，按钮样式已内联补充。
 - 路由、store、API、权限、导航等主流程已打通。
 
-### 常见错误与排查说明
+## 启动整个项目的方法
 
-#### 1. 单文件组件缺少 <template> 或 <script>
-- 报错示例：
-  - `At least one <template> or <script> is required in a single file component.`
-- 说明：
-  - 某些 .vue 文件（如 layouts/AuthLayout.vue、MainLayout.vue、views/Comments/Detail.vue）内容为空或格式不完整，需至少包含 <template> 或 <script>。
-- 解决：
-  - 补充基础结构，例如：
-    ```vue
-    <template>
-      <div>内容</div>
-    </template>
-    <script>
-    export default { name: 'xxx' }
-    </script>
-    ```
+1. **后端服务启动**
+   - 进入后端项目目录（如 `backend/`），根据后端 README 或说明文档，执行后端启动命令（如 `python manage.py runserver`、`npm run start`、`uvicorn main:app` 等）。
+   - 确保后端 API 服务正常运行，并监听在 `.env` 文件中配置的地址和端口。
 
-#### 2. 单文件组件只能有一个 <script>
-- 报错示例：
-  - `Single file component can contain only one <script> element`
-- 说明：
-  - Mentor.vue、Student.vue 等文件中出现多个 <script> 标签，或 <script setup> 与普通 <script> 混用。
-- 解决：
-  - 合并为一个 <script>，或只保留 <script setup>。
+2. **前端服务启动**
+   - 进入前端目录：
+     ```bash
+     cd frontend
+     ```
+   - 安装依赖（首次启动或依赖变更时）：
+     ```bash
+     npm install
+     # 或
+     yarn
+     ```
+   - 启动开发服务器：
+     ```bash
+     npm run serve
+     # 或
+     yarn serve
+     ```
+   - 默认访问地址为 [http://localhost:8080](http://localhost:8080)
 
-#### 3. 模块找不到
-- 报错示例：
-  - `Module not found: Error: Can't resolve './modules' in 'src/store'`
-- 说明：
-  - store/index.js 引用的 modules 目录或文件不存在。
-- 解决：
-  - 确保 src/store/modules 目录存在且包含所有模块文件。
+3. **环境变量检查**
+   - 确认 `frontend/.env` 文件中 `VUE_APP_API_BASE_URL` 配置为后端实际地址（如 `http://localhost:8000`）。
+   - 如需更改端口，可在 `.env` 或 `package.json` 中配置。
 
-#### 4. 模板解析失败/Unexpected token
-- 报错示例：
-  - `Module parse failed: Unexpected token ... You may need an additional loader to handle the result of these loaders.`
-- 说明：
-  - vue-loader、ts-loader、babel-loader 等依赖版本不兼容，或 .vue 文件语法错误。
-- 解决：
-  - 升级 @vue/cli-service、vue-loader、typescript 等依赖，检查 .vue 文件语法。
 
----
-如需了解接口调用、Vue3 语法、模块开发等，可参考 src/api、src/views、src/components 及后端 api-docs.md。
-请仔细参考Moyun-Reading-Club\backend\docs中的两个参考文档
+
+## 后端功能未在前端体现的部分（2025.6.12 检查）
+
+### 1. 圈子审核与成员管理
+- 后端支持圈子成员审核（如 `/group/:id/agree-join`、`/group/:id/review/:userId/`），但前端未见圈主/管理员审核成员的页面或入口。
+- 建议前端在圈子详情页或圈子设置页增加“成员审核”功能。
+
+### 2. 圈子设置/管理
+- 后端支持圈子信息编辑、圈子图标上传等（如 `/group/:id/settings`、`/group/upload-icon/:id`），但前端未见圈子设置页面（如 CircleSettings.vue）和图标上传入口。
+- 建议前端补充圈子设置页面，支持圈主/管理员修改圈子信息、上传图标。
+
+### 3. 讨论详情与回复
+- 后端支持讨论详情、回复、删除（如 `/group/:id/discussions/:discussionId`），但前端未见讨论详情页（如 DiscussionDetail.vue）和回复功能。
+- 建议前端补充讨论详情页面，支持查看讨论内容、回复、删除等操作。
+
+### 4. 书评详情页
+- 后端 `/journal/:id` 支持书评详情，但前端 Journal/Detail.vue 未在路由和页面中体现（如需完整书评内容、评论、点赞等）。
+- 建议前端补充书评详情页，支持评论、点赞、回复等。
+
+### 5. 书评评论详情与互动
+- 后端 `/comment/:id` 支持评论详情、点赞、回复，但前端仅有简单评论详情页，未见完整的评论互动功能。
+- 建议前端补充评论详情页，支持评论点赞、回复、嵌套展示等。
+
+### 6. 书籍上传与封面上传
+- 后端支持书籍内容上传、封面上传（如 `/book/upload/:id`、`/book/upload-cover/:id`），但前端未见上传入口。
+- 建议前端在书籍编辑/创建页增加上传书籍文件和封面功能。
+
+### 7. 个人资料统计
+- 后端 `/profile/stats/get/:id?` 支持用户统计信息（书评数、圈子数等），但前端个人中心未见统计展示。
+- 建议前端在 Profile 页面增加统计信息展示。
+
+### 8. 消息通知细分
+- 后端 `/message/unread` 返回书评评论和圈子讨论回复的未读消息，前端通知中心仅简单展示，未区分类型。
+- 建议前端通知中心细分展示不同类型通知，并支持跳转到相关详情页。
+
+### 9. 退出圈子、删除圈子
+- 后端支持圈子成员退出、圈主删除圈子，但前端部分页面未见对应操作按钮或入口。
+
+### 10. 书籍推荐/AI助手
+- 后端 `/public/recommend-books`、`/public/chat` 支持 AI 书籍推荐、AI 聊天，前端未见相关入口和页面。
+- 建议前端补充 AI 书籍推荐、AI 聊天助手入口。
+
+

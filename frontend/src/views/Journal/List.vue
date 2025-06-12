@@ -1,23 +1,21 @@
 <template>
   <div class="journal-list">
     <h2>书评列表</h2>
-    <div class="journal-search">
-      <input v-model="search" @keyup.enter="fetchJournals" placeholder="搜索书评/作者/书名..." />
-      <button @click="fetchJournals">搜索</button>
-    </div>
-    <div v-for="journal in journals" :key="journal.id" class="journal-item" @click="goDetail(journal.id)">
-      <h3>{{ journal.title }}</h3>
-      <div class="meta">作者：{{ journal.author?.account || journal.author_id }} | 书籍：{{ journal.book?.title || journal.book_id }}</div>
-      <div class="preview">{{ journal.content?.slice(0, 60) }}...</div>
-    </div>
-    <div class="pagination">
-      <button :disabled="page===1" @click="page-- && fetchJournals()">上一页</button>
-      <span>第{{ page }}页</span>
-      <button :disabled="!hasMore" @click="page++ && fetchJournals()">下一页</button>
-    </div>
-    <router-link v-if="user && (user.role==='teacher'||user.role==='admin'||user.role==='student')" to="/journal/create" class="primary-btn">发布书评</router-link>
+    <div v-if="loading" class="loading">加载中...</div>
+    <div v-else-if="error" class="error-tip">{{ error }}</div>
+    <ul v-else>
+      <li v-for="journal in journals" :key="journal.id" class="journal-item" @click="goDetail(journal.id)">
+        <div class="journal-title">{{ journal.title }}</div>
+        <div class="journal-meta">
+          作者：{{ journal.author?.account || journal.authorName || journal.author_id }} | 书籍：{{ journal.book?.title || journal.bookTitle || journal.book_id }}
+        </div>
+        <div class="journal-preview">{{ journal.content || journal.first_paragraph }}</div>
+      </li>
+      <li v-if="journals.length === 0" class="empty-tip">暂无书评</li>
+    </ul>
   </div>
 </template>
+
 <script>
 import commentsApi from '@/api/comments.api'
 import { mapGetters } from 'vuex'
@@ -25,53 +23,109 @@ export default {
   data() {
     return {
       journals: [],
-      search: '',
-      page: 1,
-      limit: 10,
-      total: 0
+      loading: true,
+      error: ''
     }
   },
   computed: {
-    ...mapGetters('auth', ['user']),
-    hasMore() {
-      return this.page * this.limit < this.total
+    ...mapGetters('auth', ['user'])
+  },
+  async created() {
+    try {
+      // 调试：打印接口响应内容
+      const res = await commentsApi.getJournals()
+      // eslint-disable-next-line no-console
+      console.log('书评接口响应内容:', res)
+      // 兼容所有常见结构
+      if (res && res.data && Array.isArray(res.data.journals)) {
+        this.journals = res.data.journals
+      } else if (res && res.data && Array.isArray(res.data.data?.journals)) {
+        this.journals = res.data.data.journals
+      } else if (res && res.data && Array.isArray(res.data.data)) {
+        this.journals = res.data.data
+      } else if (res && res.data && Array.isArray(res.data.featuredJournals)) {
+        this.journals = res.data.featuredJournals
+      } else if (Array.isArray(res.data)) {
+        this.journals = res.data
+      } else {
+        this.journals = []
+      }
+      // 调试：打印 journals 解析结果
+      console.log('journals 解析结果:', this.journals)
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.error('加载书评失败:', e, e?.response)
+      if (e?.response?.data?.error) {
+        this.error = e.response.data.error
+      } else if (e?.message) {
+        this.error = e.message
+      } else {
+        this.error = '加载失败，请稍后重试'
+      }
+    } finally {
+      this.loading = false
     }
   },
-  created() {
-    this.fetchJournals()
-  },
   methods: {
-    async fetchJournals() {
-      const res = await commentsApi.getJournals({ page: this.page, limit: this.limit, search: this.search })
-      this.journals = res.data.data.journals || []
-      this.total = res.data.data.total || 0
-    },
     goDetail(id) {
-      this.$router.push(`/journal/${id}`)
+      this.$router.push({ name: 'JournalDetail', params: { id } })
     }
   }
 }
 </script>
+
 <style scoped>
 .journal-list {
   max-width: 700px;
-  margin: 2rem auto;
+  margin: 0 auto;
   background: #fff;
   border-radius: 8px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-  padding: 2rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  padding: 32px 24px;
+}
+.loading {
+  text-align: center;
+  color: #888;
+  margin: 32px 0;
+}
+.error-tip {
+  color: #e63946;
+  text-align: center;
+  margin: 32px 0;
 }
 .journal-item {
   border-bottom: 1px solid #eee;
-  padding: 1rem 0;
+  padding: 16px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.journal-title {
+  font-size: 1.15rem;
+  font-weight: bold;
+  color: #22223b;
+}
+.journal-meta {
+  color: #888;
+  font-size: 0.98rem;
+}
+.journal-preview {
+  color: #333;
+  margin-bottom: 0.5em;
+}
+.journal-item button {
+  align-self: flex-start;
+  margin-top: 8px;
+  padding: 4px 16px;
+  border: none;
+  border-radius: 4px;
+  background: #4a4e69;
+  color: #fff;
   cursor: pointer;
 }
-.journal-item:last-child { border-bottom: none; }
-.meta { color: #888; font-size: 0.95em; margin: 0.5em 0; }
-.preview { color: #333; margin-bottom: 0.5em; }
-.journal-search { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
-input { flex: 1; padding: 0.5rem; border-radius: 4px; border: 1px solid #ccc; }
-button { padding: 0.5rem 1rem; border-radius: 4px; background: #409eff; color: #fff; border: none; cursor: pointer; }
-.primary-btn { margin-top: 1rem; display: inline-block; }
-.pagination { display: flex; justify-content: center; align-items: center; gap: 1rem; margin-top: 2rem; }
+.empty-tip {
+  text-align: center;
+  color: #888;
+  margin: 32px 0;
+}
 </style>

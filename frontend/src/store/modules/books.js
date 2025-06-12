@@ -1,3 +1,5 @@
+import booksApi from '@/api/books.api'
+
 const state = {
     bookList: [],
     currentBook: null,
@@ -30,8 +32,24 @@ const mutations = {
 
 const actions = {
     async fetchBooks({ commit }, params) {
-        const response = await this.$booksApi.getBooks(params)
-        commit('SET_BOOKS', response.data)
+        // 确保 booksApi.getBooks 存在
+        if (!booksApi || typeof booksApi.getBooks !== 'function') {
+            throw new Error('booksApi.getBooks 未定义，请检查 api/books.api.js 的导出')
+        }
+        const res = await booksApi.getBooks(params)
+        // 兼容后端返回结构
+        let books = []
+        let total = 0
+        if (res.data && res.data.data) {
+            books = res.data.data.books || []
+            total = res.data.data.total || 0
+        } else if (res.data) {
+            books = res.data.books || []
+            total = res.data.total || 0
+        }
+        commit('SET_BOOKS', books)
+        // 如有 total 相关 mutation，可一并提交
+        // commit('SET_TOTAL', total)
     },
 
     async fetchBookDetail({ commit }, bookId) {
@@ -53,7 +71,13 @@ const actions = {
     },
 
     async loadRecommendations({ commit }) {
-        const response = await this.$booksApi.getRecommendations()
+        // 检查 booksApi.getRecommendations 是否存在
+        if (!booksApi || typeof booksApi.getRecommendations !== 'function') {
+            // 若没有该方法，直接返回空数组，避免报错
+            commit('SET_RECOMMENDATIONS', [])
+            return
+        }
+        const response = await booksApi.getRecommendations()
         commit('SET_RECOMMENDATIONS', response.data)
     }
 }
