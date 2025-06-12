@@ -137,6 +137,7 @@ exports.login = async (req, res) => {
         telephone: user.telephone,
         signature: user.signature,
         role: user.role,
+        avatar_path: user.avatar_path,
         token
       }
     });
@@ -279,7 +280,7 @@ exports.getCurrentUser = async (req, res) => {
     
     // 查找用户
     const user = await User.findByPk(userId, {
-      attributes: ['id', 'account', 'email', 'telephone', 'signature', 'role']
+      attributes: ['id', 'account', 'email', 'telephone', 'signature', 'role', 'avatar_path']
     });
     
     if (!user) {
