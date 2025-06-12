@@ -47,6 +47,12 @@ const routes = [
         name: 'ProfileMentor',
         component: () => import('@/views/Profile/Mentor.vue'),
         meta: { requiresAuth: true }
+      },
+      {
+        path: 'journal',
+        name: 'JournalList',
+        component: () => import('@/views/Journal/List.vue'),
+        meta: { requiresAuth: true }
       }
     ]
   },

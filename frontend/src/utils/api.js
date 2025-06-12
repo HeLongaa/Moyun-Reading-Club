@@ -2,7 +2,8 @@ import axios from 'axios'
 import store from '@/store'
 
 const api = axios.create({
-    baseURL: process.env.VUE_APP_API_BASE_URL,
+    // 检查 baseURL 是否和后端端口一致
+    baseURL: process.env.VUE_APP_API_BASE_URL || 'http://localhost:5001/api',
     timeout: 10000
 })
 

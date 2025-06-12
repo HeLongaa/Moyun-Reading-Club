@@ -67,6 +67,7 @@
         </div>
       </div>
     </div>
+    <div v-if="error" class="error-tip">{{ error }}</div>
   </div>
 </template>
 <script setup>
@@ -78,9 +79,29 @@ const goJournal = id => router.push(`/journal/${id}`)
 const goBook = id => router.push(`/books/${id}`)
 const goGroup = id => router.push(`/circle/${id}`)
 const homeData = ref({})
+const error = ref('')
 const fetchHome = async () => {
-  const res = await homeApi.getHomeData()
-  homeData.value = res.data || {}
+  try {
+    const res = await homeApi.getHomeData()
+    // 兼容后端返回结构
+    if (res && res.data && res.data.data) {
+      homeData.value = res.data.data
+    } else if (res && res.data) {
+      homeData.value = res.data
+    } else {
+      homeData.value = {}
+    }
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.error('首页数据加载失败:', e, e?.response)
+    if (e?.response?.data?.error) {
+      error.value = e.response.data.error
+    } else if (e?.message) {
+      error.value = e.message
+    } else {
+      error.value = '首页加载失败，请稍后重试'
+    }
+  }
 }
 onMounted(fetchHome)
 </script>
@@ -224,6 +245,7 @@ ul {
   font-size: 0.98rem;
   text-align: right;
 }
+.error-tip { color: #e74c3c; text-align: center; margin: 2rem 0; font-size: 1.1rem; }
 @media (max-width: 900px) {
   .home-hero {
     flex-direction: column;
