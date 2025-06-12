@@ -6,7 +6,6 @@ export default {
 
     // 用户注册
     register: (userData) => http.post('/account/register', userData),
-
     // 刷新Token
     refreshToken: () => http.post('/auth/token/refresh/'),
 
@@ -14,10 +13,7 @@ export default {
     getUserProfile: () => http.get('/account/me'),
 
     // 退出登录
-    logout: () => {
-        localStorage.removeItem('token');
-        // 可根据项目需要清理更多本地存储
-    },
+    logout: () => http.post('/account/logout'),
 
     // 修改密码
     changePassword: (data) => http.post('/account/change-password', data),

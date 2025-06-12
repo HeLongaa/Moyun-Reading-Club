@@ -1,0 +1,2 @@
+"use strict";(self["webpackChunkfrontend"]=self["webpackChunkfrontend"]||[]).push([[582],{6582:(n,s,e)=>{e.r(s),e.d(s,{default:()=>l});var c=e(641);const d={class:"circle-discussion"};function r(n,s,e,r,u,t){return(0,c.uX)(),(0,c.CE)("div",d,s[0]||(s[0]=[(0,c.Lk)("h2",null,"圈子讨论",-1),(0,c.Lk)("div",null,"讨论功能开发中",-1)]))}const u={name:"CircleDiscussion"};var t=e(6262);const i=(0,t.A)(u,[["render",r],["__scopeId","data-v-05dd2d30"]]),l=i}}]);
+//# sourceMappingURL=582.44133e5d.js.map

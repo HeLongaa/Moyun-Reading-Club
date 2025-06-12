@@ -22,7 +22,11 @@ api.interceptors.response.use(
         const originalRequest = error.config
 
         // Token过期自动刷新
-        if (error.response.status === 401 && !originalRequest._retry) {
+        if (error.response &&
+            error.response.status === 401 &&
+            !originalRequest._retry &&
+            store.state.auth.refreshToken) {
+            
             originalRequest._retry = true
 
             try {
@@ -30,9 +34,20 @@ api.interceptors.response.use(
                 originalRequest.headers.Authorization = `Bearer ${newToken}`
                 return api(originalRequest)
             } catch (refreshError) {
+                // 刷新失败时跳转登录页
                 store.commit('auth/LOGOUT')
+                window.location.href = '/login?session_expired=1'
                 return Promise.reject(refreshError)
             }
+        }
+
+        // 新增：未登录时（无token）访问受保护接口，直接跳转登录页
+        if (error.response &&
+            error.response.status === 401 &&
+            !store.state.auth.accessToken) {
+            store.commit('auth/LOGOUT')
+            window.location.href = '/login'
+            return Promise.reject(error)
         }
 
         return Promise.reject(error)

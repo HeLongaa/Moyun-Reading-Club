@@ -1,3 +1,4 @@
+// 检查并确保所有API路径和参数与后端一致
 import http from '@/utils/api'
 
 const circlesApi = {
@@ -36,8 +37,7 @@ const circlesApi = {
   // 删除讨论
   deleteDiscussion: (id, discussionId) => http.delete(`/group/${id}/discussions/${discussionId}`),
   // 回复讨论
-  replyDiscussion: (id, discussionId, data) => http.post(`/group/${id}/discussions/${discussionId}/reply`, data),
-  // 获取讨论回复（可直接用getDiscussionDetail，若后端支持单独接口可扩展）
+  replyDiscussion: (id, discussionId, data) => http.post(`/group/${id}/discussions/${discussionId}/reply`, data)
 }
 
 export default circlesApi

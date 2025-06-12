@@ -11,7 +11,7 @@
       </select>
       <button @click="doSearch">搜索</button>
     </div>
-    <div v-if="loading">搜索中...</div>
+    <div v-if="loading" class="loading">搜索中...</div>
     <div v-else>
       <div v-if="results.book?.length">
         <h3>书籍</h3>
@@ -29,8 +29,8 @@
         <h3>圈子</h3>
         <ul><li v-for="g in results.group" :key="g.id">{{ g.name }}</li></ul>
       </div>
-      <div v-if="!results.book?.length && !results.journal?.length && !results.user?.length && !results.group?.length && !loading">
-        <p>无搜索结果</p>
+      <div v-if="!results.book?.length && !results.journal?.length && !results.user?.length && !results.group?.length && !loading" class="empty-tip">
+        无搜索结果
       </div>
     </div>
   </div>
@@ -51,10 +51,20 @@ const doSearch = async () => {
 }
 </script>
 <style scoped>
-.search-page { max-width: 700px; margin: 2rem auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 12px #eee; padding: 2rem; }
+.search-page {
+  max-width: 700px;
+  margin: 2rem auto;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px #eee;
+  padding: 2rem;
+  min-height: 400px;
+}
 .search-bar { display: flex; gap: 1rem; margin-bottom: 1.5rem; }
 input, select { padding: 0.5rem; border-radius: 4px; border: 1px solid #ccc; }
 button { background: #409eff; color: #fff; border: none; border-radius: 4px; padding: 0.5rem 1.5rem; cursor: pointer; }
 h3 { margin-top: 1.5rem; }
 ul { margin: 0.5rem 0 1rem 1.5rem; }
+.loading { text-align: center; color: #888; margin: 2rem 0; }
+.empty-tip { color: #aaa; text-align: center; margin: 2rem 0; font-size: 1.1rem; }
 </style>

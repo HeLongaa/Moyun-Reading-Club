@@ -1,10 +1,9 @@
-<script lang="ts">
-import {defineComponent} from 'vue'
-import { getBooks, getBookTypes } from '@/api/books.api'
+<script>
+import booksApi from '@/api/books.api'
 import BookList from '@/components/books/BookList.vue'
 import BookSearcher from '@/components/books/BookSearcher.vue'
 
-export default defineComponent({
+export default {
   name: "Explore",
   components: { BookList, BookSearcher },
   data() {
@@ -23,14 +22,14 @@ export default defineComponent({
       return this.page * this.limit < this.total
     }
   },
-  created() {
-    this.fetchTypes()
-    this.fetchBooks()
+  async created() {
+    await this.fetchTypes()
+    await this.fetchBooks()
   },
   methods: {
     async fetchTypes() {
-      const res = await getBookTypes()
-      this.types = res.data.data || []
+      const res = await booksApi.getBookTypes()
+      this.types = (res.data && res.data.data) ? res.data.data : []
     },
     async fetchBooks() {
       const params = {
@@ -39,19 +38,29 @@ export default defineComponent({
         type: this.type,
         search: this.search
       }
-      const res = await getBooks(params)
-      this.books = res.data.data.books || []
-      this.total = res.data.data.total || 0
+      const res = await booksApi.getBooks(params)
+      // 修正：兼容 res.data.data.books 或 res.data.books
+      let books = []
+      let total = 0
+      if (res.data && res.data.data) {
+        books = res.data.data.books || []
+        total = res.data.data.total || 0
+      } else if (res.data) {
+        books = res.data.books || []
+        total = res.data.total || 0
+      }
+      this.books = books
+      this.total = total
     },
     goDetail(book) {
       this.$router.push(`/books/${book.id}`)
     }
   }
-})
+}
 </script>
 
 <template>
-  <div class="explore-books">
+  <div class="books-explore">
     <div class="explore-header">
       <BookSearcher v-model="search" @search="fetchBooks" />
       <select v-model="type" @change="fetchBooks">

@@ -5,15 +5,19 @@
       <input v-model="search" @keyup.enter="fetchJournals" placeholder="搜索书评/作者/书名..." />
       <button @click="fetchJournals">搜索</button>
     </div>
-    <div v-for="journal in journals" :key="journal.id" class="journal-item" @click="goDetail(journal.id)">
-      <h3>{{ journal.title }}</h3>
-      <div class="meta">作者：{{ journal.author?.account || journal.author_id }} | 书籍：{{ journal.book?.title || journal.book_id }}</div>
-      <div class="preview">{{ journal.content?.slice(0, 60) }}...</div>
-    </div>
-    <div class="pagination">
-      <button :disabled="page===1" @click="page-- && fetchJournals()">上一页</button>
-      <span>第{{ page }}页</span>
-      <button :disabled="!hasMore" @click="page++ && fetchJournals()">下一页</button>
+    <div v-if="loading" class="loading">加载中...</div>
+    <div v-else-if="journals.length === 0" class="empty-tip">暂无书评</div>
+    <div v-else>
+      <div v-for="journal in journals" :key="journal.id" class="journal-item" @click="goDetail(journal.id)">
+        <h3>{{ journal.title }}</h3>
+        <div class="meta">作者：{{ journal.author?.account || journal.author_id }} | 书籍：{{ journal.book?.title || journal.book_id }}</div>
+        <div class="preview">{{ journal.content?.slice(0, 60) }}...</div>
+      </div>
+      <div class="pagination">
+        <button :disabled="page===1" @click="page-- && fetchJournals()">上一页</button>
+        <span>第{{ page }}页</span>
+        <button :disabled="!hasMore" @click="page++ && fetchJournals()">下一页</button>
+      </div>
     </div>
     <router-link v-if="user && (user.role==='teacher'||user.role==='admin'||user.role==='student')" to="/journal/create" class="primary-btn">发布书评</router-link>
   </div>
@@ -28,7 +32,8 @@ export default {
       search: '',
       page: 1,
       limit: 10,
-      total: 0
+      total: 0,
+      loading: false
     }
   },
   computed: {
@@ -42,9 +47,14 @@ export default {
   },
   methods: {
     async fetchJournals() {
-      const res = await commentsApi.getJournals({ page: this.page, limit: this.limit, search: this.search })
-      this.journals = res.data.data.journals || []
-      this.total = res.data.data.total || 0
+      this.loading = true
+      try {
+        const res = await commentsApi.getJournals({ page: this.page, limit: this.limit, search: this.search })
+        this.journals = res.data.data.journals || []
+        this.total = res.data.data.total || 0
+      } finally {
+        this.loading = false
+      }
     },
     goDetail(id) {
       this.$router.push(`/journal/${id}`)
@@ -60,6 +70,7 @@ export default {
   border-radius: 8px;
   box-shadow: 0 2px 12px rgba(0,0,0,0.08);
   padding: 2rem;
+  min-height: 400px; /* 保证内容区有高度 */
 }
 .journal-item {
   border-bottom: 1px solid #eee;
@@ -74,4 +85,6 @@ input { flex: 1; padding: 0.5rem; border-radius: 4px; border: 1px solid #ccc; }
 button { padding: 0.5rem 1rem; border-radius: 4px; background: #409eff; color: #fff; border: none; cursor: pointer; }
 .primary-btn { margin-top: 1rem; display: inline-block; }
 .pagination { display: flex; justify-content: center; align-items: center; gap: 1rem; margin-top: 2rem; }
+.loading { text-align: center; color: #888; margin: 2rem 0; }
+.empty-tip { color: #aaa; text-align: center; margin: 2rem 0; font-size: 1.1rem; }
 </style>

@@ -1,20 +1,9 @@
+// 检查并确保所有API路径和参数与后端一致
 import http from '@/utils/api'
 
 export default {
-    // 获取评论
-    getComments: (targetId, params) => http.get(`/comments/${targetId}/`, { params }),
-
-    // 发表评论
-    postComment: (data) => http.post('/comments/', data),
-
-    // 删除评论
-    deleteComment: (commentId) => http.delete(`/comments/${commentId}/`),
-
-    // 互动操作（点赞/收藏）
-    interact: (commentId, action) => http.post(`/comments/${commentId}/interact/`, { action }),
-
     // 获取书评评论
-    getJournalComments: (journalId) => http.get(`/journal/${journalId}/comments`),
+    getJournalComments: (journalId, params) => http.get(`/journal/${journalId}/comments`, { params }),
 
     // 添加评论
     addJournalComment: (journalId, data) => http.post(`/journal/${journalId}/comments`, data),
@@ -47,5 +36,14 @@ export default {
         return http.post(`/journal/upload-header/${id}`, formData, {
             headers: { 'Content-Type': 'multipart/form-data' }
         })
-    }
+    },
+
+    // 获取单条评论详情（如后端支持）
+    getCommentDetail: (id) => http.get(`/comment/${id}`),
+
+    // 评论点赞/互动（如后端支持）
+    interact: (id, action) => http.post(`/comment/${id}/interact`, { action }),
+
+    // 回复评论（如后端支持）
+    replyComment: (id, data) => http.post(`/comment/${id}/reply`, data)
 }

@@ -1,45 +1,75 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import authRoutes from './routes/authRoutes'
-import booksRoutes from './routes/booksRoutes'
-import circlesRoutes from './routes/circlesRoutes'
-import commentsRoutes from './routes/commentsRoutes'
-import notificationsRoutes from './routes/notificationsRoutes'
+import MainLayout from '@/layouts/MainLayout.vue'
+import AuthLayout from '@/layouts/AuthLayout.vue'
+import Home from '@/views/Home.vue'
+import NotFound from '@/views/Error/NotFound.vue'
+import Login from '@/views/Auth/Login.vue'
+import Register from '@/views/Auth/Register.vue'
 import authGuard from './guards/authGuard'
-import roleGuard from './guards/roleGuard'
 
 const routes = [
   {
     path: '/',
-    name: 'Home',
-    component: () => import('@/views/Home.vue'),
-    meta: { requiresAuth: true }
+    component: MainLayout,
+    children: [
+      {
+        path: '',
+        name: 'Home',
+        component: Home,
+        meta: { requiresAuth: true }
+      },
+      {
+        path: 'books',
+        name: 'BooksList',
+        component: () => import('@/views/Books/List.vue'),
+        meta: { requiresAuth: true }
+      },
+      {
+        path: 'books/:id',
+        name: 'BookDetail',
+        component: () => import('@/views/Books/Detail.vue'),
+        meta: { requiresAuth: true }
+      },
+      {
+        path: 'circle',
+        name: 'CircleList',
+        component: () => import('@/views/Circle/List.vue'),
+        meta: { requiresAuth: true }
+      },
+      {
+        path: 'profile/student',
+        name: 'ProfileStudent',
+        component: () => import('@/views/Profile/Student.vue'),
+        meta: { requiresAuth: true }
+      },
+      {
+        path: 'profile/mentor',
+        name: 'ProfileMentor',
+        component: () => import('@/views/Profile/Mentor.vue'),
+        meta: { requiresAuth: true }
+      }
+    ]
   },
   {
-    path: '/circle',
-    name: 'CircleList',
-    component: () => import('@/views/Circle/List.vue'),
-    meta: { requiresAuth: true }
-  },
-  ...authRoutes,
-  ...booksRoutes,
-  ...circlesRoutes,
-  ...commentsRoutes,
-  ...notificationsRoutes,
-  {
-    path: '/profile/student',
-    component: () => import('@/views/Profile/Student.vue'),
-    meta: { requiresAuth: true },
-    beforeEnter: authGuard
-  },
-  {
-    path: '/profile/mentor',
-    component: () => import('@/views/Profile/Mentor.vue'),
-    meta: { requiresAuth: true },
-    beforeEnter: authGuard
+    path: '/',
+    component: AuthLayout,
+    children: [
+      {
+        path: 'login',
+        name: 'Login',
+        component: Login
+      },
+      {
+        path: 'register',
+        name: 'Register',
+        component: Register
+      }
+    ]
   },
   {
     path: '/:pathMatch(.*)*',
-    component: () => import('@/views/Error/NotFound')
+    name: 'NotFound',
+    component: NotFound
   }
 ]
 
@@ -49,6 +79,5 @@ const router = createRouter({
 })
 
 router.beforeEach(authGuard)
-router.beforeEach(roleGuard)
 
 export default router
