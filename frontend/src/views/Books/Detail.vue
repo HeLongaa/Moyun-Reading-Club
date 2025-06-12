@@ -1,100 +1,100 @@
 <template>
-  <MainLayout>
-    <div class="book-detail">
-      <div class="book-header">
-        <img :src="book.cover" class="book-cover" alt="封面">
-        <div class="book-info">
-          <h1>{{ book.title }}</h1>
-          <p class="author">作者：{{ book.author }}</p>
-          <div class="meta">
-            <span class="publisher">出版社：{{ book.publisher }}</span>
-            <span class="isbn">ISBN：{{ book.isbn }}</span>
-          </div>
-          <ShareButton :book="book" />
-        </div>
+  <div class="book-detail">
+    <h2>{{ book.title }}</h2>
+    <div v-if="loading" class="loading">加载中...</div>
+    <div v-else-if="error" class="error">{{ error }}</div>
+    <div v-else>
+      <div class="book-meta">
+        <span>作者：{{ book.author }}</span>
+        <span>出版社：{{ book.publisher }}</span>
+        <span>类型：{{ book.type }}</span>
       </div>
-
-      <div class="book-content">
-        <Tabs>
-          <Tab title="简介">
-            <div class="description">{{ book.description }}</div>
-          </Tab>
-          <Tab title="书评">
-            <CommentSection :targetId="book.id" targetType="book" />
-          </Tab>
-          <Tab title="相关圈子">
-            <CircleList :circles="relatedCircles" />
-          </Tab>
-        </Tabs>
+      <div class="book-desc">
+        <strong>简介：</strong>
+        <p>{{ book.description }}</p>
+      </div>
+      <div class="book-actions">
+        <router-link :to="`/journal?bookId=${book.id}`">查看书评</router-link>
+        <button @click="shareBook">分享</button>
+        <router-link to="/books">返回书籍列表</router-link>
+        <router-link to="/">返回首页</router-link>
       </div>
     </div>
-  </MainLayout>
+  </div>
 </template>
 
 <script>
-import { mapActions, mapState } from 'vuex'
+import booksApi from '@/api/books.api'
 
 export default {
-  props: ['id'],
-
-  computed: {
-    ...mapState('books', ['currentBook']),
-    book() {
-      return this.currentBook || {}
-    },
-    relatedCircles() {
-      return this.$store.state.circles.availableCircles.filter(
-          c => c.tags.some(t => this.book.tags.includes(t))
-      )
+  name: 'BookDetail',
+  data() {
+    return {
+      book: {},
+      loading: true,
+      error: ''
     }
   },
-
   async created() {
-    await this.fetchBookDetail(this.id)
+    try {
+      const id = this.$route.params.id
+      const res = await booksApi.getBookDetail(id)
+      this.book = res.data.data || {}
+    } catch (e) {
+      this.error = '加载失败，请稍后重试'
+    } finally {
+      this.loading = false
+    }
   },
-
   methods: {
-    ...mapActions('books', ['fetchBookDetail'])
+    shareBook() {
+      alert('分享功能开发中')
+    }
   }
 }
 </script>
 
 <style scoped>
-.book-header {
-  display: flex;
-  gap: 2rem;
-  margin-bottom: 2rem;
+.book-detail {
+  max-width: 700px;
+  margin: 0 auto;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  padding: 32px 24px;
 }
-
-.book-cover {
-  width: 240px;
-  height: 320px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-}
-
-.book-info {
-  flex: 1;
-}
-
-.author {
-  font-size: 1.2em;
-  color: #666;
-  margin: 0.5rem 0;
-}
-
-.meta {
-  display: flex;
-  gap: 1rem;
-  margin: 1rem 0;
+.loading {
+  text-align: center;
   color: #888;
+  margin: 32px 0;
 }
-
-.book-content {
-  margin-top: 2rem;
+.error {
+  color: #e63946;
+  text-align: center;
+  margin: 32px 0;
 }
-
-.description {
-  line-height: 1.8;
-  white-space: pre-wrap;
+.book-meta {
+  color: #888;
+  font-size: 0.98rem;
+  margin-bottom: 12px;
+  display: flex;
+  gap: 24px;
+}
+.book-desc {
+  margin-bottom: 24px;
+  color: #22223b;
+  font-size: 1.05rem;
+}
+.book-actions {
+  display: flex;
+  gap: 16px;
+}
+.book-actions button {
+  padding: 4px 16px;
+  border: none;
+  border-radius: 4px;
+  background: #4a4e69;
+  color: #fff;
+  cursor: pointer;
 }
 </style>

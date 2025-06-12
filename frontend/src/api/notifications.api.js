@@ -1,11 +1,12 @@
 import http from '@/utils/api'
 
 export default {
-    getNotifications: (params) => http.get('/notifications/', { params }),
-    markAsRead: (id) => http.patch(`/notifications/${id}/mark-read/`),
-    markAllAsRead: () => http.post('/notifications/mark-all-read/'),
-    
-    getUnreadCount: () => http.get('/notifications/unread-count/'),
-    
-    getNotificationsByType: (type) => http.get(`/notifications/type/${type}/`)
+    // 获取未读消息
+    getUnreadMessages: () => http.get('/message/unread'),
+    // 标记书评评论为已读
+    markJournalCommentAsRead: (commentId) => http.put(`/message/journal-comment/${commentId}/read`),
+    // 标记圈子讨论回复为已读
+    markDiscussionReplyAsRead: (replyId) => http.put(`/message/discussion-reply/${replyId}/read`),
+    // 标记所有消息为已读
+    markAllAsRead: () => http.put('/message/read-all')
 }

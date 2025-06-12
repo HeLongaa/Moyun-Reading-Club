@@ -1,0 +1,2 @@
+"use strict";(self["webpackChunkfrontend"]=self["webpackChunkfrontend"]||[]).push([[269],{269:(n,e,t)=>{t.r(e),t.d(e,{default:()=>l});var r=t(641);const u={class:"profile-container"};function a(n,e,t,a,d,s){return(0,r.uX)(),(0,r.CE)("div",u,e[0]||(e[0]=[(0,r.Lk)("h2",null,"个人中心",-1),(0,r.Lk)("div",null,"Student 相关内容开发中",-1)]))}const d={name:"Student"};var s=t(6262);const c=(0,s.A)(d,[["render",a],["__scopeId","data-v-5a9b19e3"]]),l=c}}]);
+//# sourceMappingURL=269.a8f9b05a.js.map

@@ -1,78 +1,71 @@
 <template>
-  <AuthLayout>
-    <div class="login-container">
-      <h2>欢迎回到墨云读书会</h2>
-      <form @submit.prevent="handleSubmit">
-        <div class="form-group">
-          <label>邮箱</label>
-          <input
-              v-model="form.email"
-              type="email"
-              required
-              placeholder="请输入注册邮箱"
-          >
-        </div>
-
-        <div class="form-group">
-          <label>密码</label>
-          <input
-              v-model="form.password"
-              type="password"
-              required
-              placeholder="请输入密码"
-          >
-        </div>
-
-        <button
-            type="submit"
-            :disabled="loading"
-            class="primary-btn"
+  <div class="login-container">
+    <h2>欢迎登录墨云读书会</h2>
+    <form @submit.prevent="handleSubmit">
+      <div class="form-group">
+        <label>账号/邮箱</label>
+        <input
+          v-model="form.account"
+          required
+          placeholder="请输入账号或邮箱"
         >
-          {{ loading ? '登录中...' : '立即登录' }}
-        </button>
-
-        <div class="auth-links">
-          <router-link to="/register">没有账号？立即注册</router-link>
-          <router-link to="/forgot-password">忘记密码？</router-link>
-        </div>
-      </form>
-    </div>
-  </AuthLayout>
+      </div>
+      <div class="form-group">
+        <label>密码</label>
+        <input
+          v-model="form.password"
+          type="password"
+          required
+          placeholder="请输入密码"
+        >
+      </div>
+      <div v-if="error" class="error-msg">{{ error }}</div>
+      <button
+        type="submit"
+        :disabled="loading"
+        class="primary-btn"
+      >
+        {{ loading ? '登录中...' : '登录' }}
+      </button>
+      <div class="auth-links">
+        <router-link to="/register">没有账号？立即注册</router-link>
+      </div>
+    </form>
+  </div>
 </template>
 
 <script>
-import AuthLayout from '@/layouts/AuthLayout'
-import { mapActions } from 'vuex'
-
 export default {
-  components: { AuthLayout },
-
+  name: 'Login',
   data() {
     return {
       form: {
-        email: '',
+        account: '',
         password: ''
       },
       loading: false,
-      error: null
+      error: ''
     }
   },
-
   methods: {
-    ...mapActions('auth', ['login']),
-
     async handleSubmit() {
       this.loading = true
-      this.error = null
-
+      this.error = ''
       try {
-        await this.login(this.form)
-        this.$router.push(this.$route.query.redirect || '/')
-      } catch (error) {
-        this.error = error.response?.data?.message || '登录失败，请检查输入'
+        await this.$store.dispatch('auth/login', this.form)
+        // 登录成功后跳转到重定向页面或首页
+        const redirect = this.$route.query.redirect || '/'
+        this.$router.push(redirect)
+      } catch (e) {
+        this.error = e.response?.data?.message || '登录失败'
       } finally {
         this.loading = false
       }
+    }
+  },
+  mounted() {
+    if (this.$store.getters['auth/isAuthenticated']) {
+      this.$router.push('/')
     }
   }
 }
@@ -87,37 +80,32 @@ export default {
   border-radius: 8px;
   box-shadow: 0 2px 12px rgba(0,0,0,0.1);
 }
-
 .form-group {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
 }
-
-.form-group label {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 500;
-}
-
-.form-group input {
+input {
   width: 100%;
-  padding: 0.8rem;
-  border: 1px solid #ddd;
+  padding: 0.5rem;
   border-radius: 4px;
+  border: 1px solid #ccc;
 }
-
-.primary-btn {
+button.primary-btn {
   width: 100%;
-  padding: 1rem;
-  background: #2563eb;
-  color: white;
+  margin-top: 1rem;
+  padding: 0.5rem 0;
+  border-radius: 4px;
+  background: #409eff;
+  color: #fff;
   border: none;
-  border-radius: 4px;
   cursor: pointer;
 }
-
+.error-msg {
+  color: #e74c3c;
+  margin-bottom: 1rem;
+  text-align: center;
+}
 .auth-links {
-  margin-top: 1.5rem;
-  display: flex;
-  justify-content: space-between;
+  margin-top: 1rem;
+  text-align: center;
 }
 </style>

@@ -1,110 +1,77 @@
 <template>
   <div class="notifications-view">
     <h2>通知中心</h2>
-    
-    <el-tabs v-model="activeTab" @tab-click="handleTabChange">
-      <el-tab-pane label="全部" name="all" />
-      <el-tab-pane label="系统" name="system" />
-      <el-tab-pane label="评论" name="comment" />
-      <el-tab-pane label="圈子" name="circle" />
-    </el-tabs>
-    
     <div class="actions">
-      <el-button 
-        size="small" 
-        @click="markAllAsRead"
-        :loading="markingAll"
-      >
-        全部已读
-      </el-button>
+      <button @click="markAllAsRead" :disabled="markingAll">全部已读</button>
     </div>
-    
-    <el-table :data="notifications" style="width: 100%">
-      <el-table-column prop="title" label="通知" />
-      <el-table-column prop="created_at" label="时间" width="180" />
-      <el-table-column label="状态" width="100">
-        <template #default="{ row }">
-          <el-tag 
-            size="small" 
-            :type="row.read ? '' : 'danger'"
-          >
-            {{ row.read ? '已读' : '未读' }}
-          </el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column label="操作" width="120">
-        <template #default="{ row }">
-          <el-button 
-            v-if="!row.read"
-            size="mini" 
-            @click="markAsRead(row.id)"
-          >
-            标记已读
-          </el-button>
-        </template>
-      </el-table-column>
-    </el-table>
+    <div v-if="loading" class="loading">加载中...</div>
+    <div v-else-if="error" class="error-tip">{{ error }}</div>
+    <ul v-else>
+      <li v-for="n in notifications" :key="n.id" :class="{ unread: !n.read }">
+        <div class="title">{{ n.title }}</div>
+        <div class="meta">
+          <span>{{ n.created_at || n.time }}</span>
+          <span v-if="!n.read" class="unread-tag">未读</span>
+        </div>
+        <button v-if="!n.read" @click="markAsRead(n.id)">标记已读</button>
+      </li>
+      <li v-if="!notifications.length" class="empty-tip">暂无通知</li>
+    </ul>
   </div>
 </template>
 
 <script>
-import { mapState, mapActions } from 'vuex'
-
+import notificationsApi from '@/api/notifications.api'
 export default {
   name: 'NotificationsView',
-  
   data() {
     return {
-      activeTab: 'all',
       notifications: [],
-      markingAll: false,
-      loading: false
+      loading: false,
+      error: '',
+      markingAll: false
     }
   },
-  
-  computed: {
-    ...mapState('notifications', ['unreadCount'])
+  async created() {
+    await this.fetchNotifications()
   },
-  
-  created() {
-    this.fetchNotifications()
-  },
-  
   methods: {
-    ...mapActions('notifications', [
-      'fetchNotifications',
-      'fetchByType',
-      'markAsRead',
-      'markAllAsRead'
-    ]),
-    
     async fetchNotifications() {
       this.loading = true
+      this.error = ''
       try {
-        if (this.activeTab === 'all') {
-          await this.fetchNotifications()
+        const res = await notificationsApi.getUnreadMessages()
+        // 兼容后端返回结构
+        if (res && res.data && Array.isArray(res.data.notifications)) {
+          this.notifications = res.data.notifications
+        } else if (Array.isArray(res.data)) {
+          this.notifications = res.data
+        } else if (Array.isArray(res)) {
+          this.notifications = res
         } else {
-          await this.fetchByType(this.activeTab)
+          this.notifications = []
         }
+      } catch (e) {
+        this.error = e?.response?.data?.error || e?.message || '加载失败，请稍后重试'
       } finally {
         this.loading = false
       }
     },
-    
-    handleTabChange() {
-      this.fetchNotifications()
-    },
-    
     async markAsRead(id) {
-      await this.markAsRead(id)
-      this.fetchNotifications()
+      try {
+        await notificationsApi.markJournalCommentAsRead(id)
+        await this.fetchNotifications()
+      } catch (e) {
+        this.error = '操作失败'
+      }
     },
-    
     async markAllAsRead() {
       this.markingAll = true
       try {
-        await this.markAllAsRead()
-        this.fetchNotifications()
+        await notificationsApi.markAllAsRead()
+        await this.fetchNotifications()
+      } catch (e) {
+        this.error = '操作失败'
       } finally {
         this.markingAll = false
       }
@@ -115,13 +82,26 @@ export default {
 
 <style scoped>
 .notifications-view {
-  max-width: 1000px;
+  max-width: 700px;
   margin: 0 auto;
-  padding: 20px;
+  padding: 2rem;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px #eee;
 }
-
 .actions {
-  margin: 15px 0;
+  margin-bottom: 1rem;
   text-align: right;
 }
+.loading { text-align: center; color: #888; margin: 2rem 0; }
+.error-tip { color: #e74c3c; text-align: center; margin: 2rem 0; }
+.empty-tip { color: #aaa; text-align: center; margin: 2rem 0; font-size: 1.1rem; }
+ul { list-style: none; padding: 0; }
+li { border-bottom: 1px solid #eee; padding: 1rem 0; }
+li.unread .title { font-weight: bold; color: #22223b; }
+.title { font-size: 1.05rem; }
+.meta { color: #888; font-size: 0.95rem; margin-top: 0.3rem; display: flex; gap: 1rem; }
+.unread-tag { color: #e74c3c; font-weight: bold; }
+button { margin-top: 0.5rem; background: #409eff; color: #fff; border: none; border-radius: 4px; padding: 0.3rem 1rem; cursor: pointer; }
+button:disabled { background: #ccc; cursor: not-allowed; }
 </style>
