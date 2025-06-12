@@ -9,15 +9,13 @@ const circlesApi = {
   // 创建圈子
   createGroup: (data) => http.post('/group', data),
   // 编辑圈子
-  editGroup: (id, data) => http.put(`/group/${id}`, data),
+  updateGroup: (id, data) => http.put(`/group/${id}`, data),
   // 删除圈子
   deleteGroup: (id) => http.delete(`/group/${id}`),
   // 上传圈子图标
-  uploadGroupIcon: (id, file) => {
-    const form = new FormData()
-    form.append('icon', file)
-    return http.post(`/group/upload-icon/${id}`, form)
-  },
+  uploadGroupIcon: (id, formData) => http.post(`/group/upload-icon/${id}`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }),
   // 加入圈子（需审核）
   joinGroup: (id) => http.post(`/group/${id}/join`),
   // 退出圈子
@@ -25,9 +23,9 @@ const circlesApi = {
   // 获取圈子成员
   getGroupMembers: (id) => http.get(`/group/${id}/members`),
   // 获取待审核成员
-  getPendingMembers: (id) => http.get(`/group/${id}/agree-join`),
+  getPendingMembers: (groupId) => http.get(`/group/${groupId}/agree-join`),
   // 审核成员（isOno: true/false）
-  auditMember: (id, userId, isOno) => http.post(`/group/${id}/review/${userId}/`, { isOno }),
+  reviewMember: (groupId, userId, data) => http.post(`/group/${groupId}/review/${userId}/`, data),
   // 获取圈子讨论列表
   getDiscussions: (id, params) => http.get(`/group/${id}/discussions`, { params }),
   // 获取讨论详情

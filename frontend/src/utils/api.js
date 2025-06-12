@@ -22,6 +22,13 @@ api.interceptors.response.use(
     async error => {
         const originalRequest = error.config
 
+        // 404错误处理：接口未找到时给出友好提示
+        if (error.response && error.response.status === 404) {
+            // 可选：全局弹窗或页面提示
+            alert('请求的接口不存在（404），请检查API路径或联系管理员')
+            return Promise.reject(error)
+        }
+
         // Token过期自动刷新
         if (error.response &&
             error.response.status === 401 &&

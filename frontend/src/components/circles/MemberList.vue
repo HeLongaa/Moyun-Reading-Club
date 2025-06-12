@@ -1,48 +1,18 @@
 <template>
-  <div>
-    <el-table :data="members" style="width: 100%">
-      <el-table-column prop="username" label="成员" />
-      <el-table-column prop="role" label="角色">
-        <template #default="{ row }">
-          <el-select
-            v-model="row.role"
-            @change="(role) => handleRoleChange(row.id, role)"
-          >
-            <el-option label="普通成员" value="member" />
-            <el-option label="管理员" value="admin" />
-            <el-option label="创建者" value="creator" />
-          </el-select>
-        </template>
-      </el-table-column>
-      <el-table-column v-if="isOwner" label="操作">
-        <template #default="{ row }">
-          <el-button
-            v-if="row.state === 'pending'"
-            size="mini"
-            type="success"
-            @click="audit(row.id, true)"
-          >
-            通过
-          </el-button>
-          <el-button
-            v-if="row.state === 'pending'"
-            size="mini"
-            type="danger"
-            @click="audit(row.id, false)"
-          >
-            拒绝
-          </el-button>
-          <el-button
-            v-if="row.state !== 'pending' && row.role !== 'creator'"
-            size="mini"
-            type="danger"
-            @click="remove(row.id)"
-          >
-            移除
-          </el-button>
-        </template>
-      </el-table-column>
-    </el-table>
+  <div class="member-list">
+    <h3>成员列表</h3>
+    <div v-if="loading" class="loading">加载中...</div>
+    <div v-else-if="error" class="error-tip">{{ error }}</div>
+    <ul v-else>
+      <li v-for="member in members" :key="member.id" class="member-item">
+        <span class="member-name">{{ member.account || member.name }}</span>
+        <span class="member-role" v-if="isOwner && member.role">{{
+          member.role
+        }}</span>
+        <!-- 其他成员信息 -->
+      </li>
+      <li v-if="!members || members.length === 0" class="empty-tip">暂无成员</li>
+    </ul>
   </div>
 </template>
 
@@ -52,22 +22,15 @@ export default {
   props: {
     members: {
       type: Array,
-      required: true
+      default: () => []
     },
-    isOwner: {
-      type: Boolean,
-      default: false
-    }
+    isOwner: Boolean,
+    groupId: [String, Number]
   },
-  methods: {
-    handleRoleChange(userId, role) {
-      this.$emit('update-role', { userId, role })
-    },
-    audit(userId, isOno) {
-      this.$emit('audit', { userId, isOno })
-    },
-    remove(userId) {
-      this.$emit('remove', userId)
+  data() {
+    return {
+      loading: false,
+      error: ''
     }
   }
 }

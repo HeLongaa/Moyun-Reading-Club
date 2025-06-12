@@ -66,6 +66,26 @@
           <div v-else>暂无</div>
         </div>
       </div>
+      <div class="section-card">
+        <h2><span class="icon">🔍</span> 搜索</h2>
+        <router-link to="/search" class="more-link">全站搜索 &gt;</router-link>
+      </div>
+      <div class="section-card">
+        <h2><span class="icon">📤</span> 上传书籍</h2>
+        <router-link to="/books/upload" class="more-link">上传书籍 &gt;</router-link>
+      </div>
+      <div class="section-card">
+        <h2><span class="icon">🤖</span> AI 书籍推荐</h2>
+        <router-link to="/ai/recommend" class="more-link">AI 书籍推荐 &gt;</router-link>
+      </div>
+      <div class="section-card">
+        <h2><span class="icon">🤖</span> AI 聊天助手</h2>
+        <router-link to="/ai/chat" class="more-link">AI 聊天助手 &gt;</router-link>
+      </div>
+      <div class="section-card">
+        <h2><span class="icon">📈</span> 个人统计</h2>
+        <router-link to="/profile/stats" class="more-link">查看统计 &gt;</router-link>
+      </div>
     </div>
     <div v-if="error" class="error-tip">{{ error }}</div>
   </div>

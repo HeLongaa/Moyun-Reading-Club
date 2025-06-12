@@ -73,9 +73,112 @@ const routes = [
         meta: { requiresAuth: true }
       },
       {
+        path: 'profile/stats',
+        name: 'ProfileStats',
+        component: () => import('@/views/Profile/Stats.vue'),
+        meta: { requiresAuth: true }
+      },
+      {
+        path: 'books/upload',
+        name: 'BookUpload',
+        component: () => import('@/views/Books/Upload.vue'),
+        meta: { requiresAuth: true }
+      },
+      {
+        path: 'circle/:id/settings',
+        name: 'CircleSettings',
+        component: () => import('@/views/Circle/Settings.vue'),
+        meta: { requiresAuth: true }
+      },
+      {
+        path: 'ai/recommend',
+        name: 'AIRecommend',
+        component: () => import('@/views/AI/Recommend.vue'),
+        meta: { requiresAuth: true }
+      },
+      {
+        path: 'ai/chat',
+        name: 'AIChat',
+        component: () => import('@/views/AI/Chat.vue'),
+        meta: { requiresAuth: true }
+      },
+      {
         path: 'journal',
         name: 'JournalList',
         component: () => import('@/views/Journal/List.vue'),
+        meta: { requiresAuth: true }
+      },
+      // 检查未注册的页面，建议补充如下路由（如有对应 .vue 文件）：
+      {
+        path: 'journal/:id',
+        name: 'JournalDetail',
+        component: () => import('@/views/Journal/Detail.vue'),
+        meta: { requiresAuth: true }
+      },
+      {
+        path: 'journal/edit/:id',
+        name: 'JournalEdit',
+        component: () => import('@/views/Journal/Edit.vue'),
+        meta: { requiresAuth: true }
+      },
+      {
+        path: 'circle/:id/edit',
+        name: 'CircleEdit',
+        component: () => import('@/views/Circle/Edit.vue'),
+        meta: { requiresAuth: true }
+      },
+      {
+        path: 'circle/:id/join',
+        name: 'CircleJoin',
+        component: () => import('@/views/Circle/Join.vue'),
+        meta: { requiresAuth: true }
+      },
+      {
+        path: 'circle/:id/discussion/:discussionId',
+        name: 'DiscussionDetail',
+        component: () => import('@/views/Circle/DiscussionDetail.vue'),
+        meta: { requiresAuth: true }
+      },
+      {
+        path: 'circle/:id',
+        name: 'CircleDetail',
+        component: () => import('@/views/Circle/Detail.vue'),
+        meta: { requiresAuth: true }
+      },
+      {
+        path: 'books/explore',
+        name: 'BooksExplore',
+        component: () => import('@/views/Books/Explore.vue'),
+        meta: { requiresAuth: true }
+      },
+      {
+        path: 'circle/:id/discussion',
+        name: 'CircleDiscussion',
+        component: () => import('@/views/Circle/Discussion.vue'),
+        meta: { requiresAuth: true }
+      },
+      {
+        path: 'circle/:id/library',
+        name: 'CircleLibrary',
+        component: () => import('@/views/Circle/Library.vue'),
+        meta: { requiresAuth: true }
+      },
+      {
+        path: 'circle/:id/members',
+        name: 'CircleMembers',
+        component: () => import('@/views/Circle/Members.vue'),
+        meta: { requiresAuth: true }
+      },
+      {
+        path: 'circle/:id/home',
+        name: 'CircleHome',
+        component: () => import('@/views/Circle/CircleHome.vue'),
+        meta: { requiresAuth: true }
+      },
+      {
+        path: 'search',
+        name: 'Search',
+        component: () => import('@/views/Search.vue'),
         meta: { requiresAuth: true }
       }
     ]

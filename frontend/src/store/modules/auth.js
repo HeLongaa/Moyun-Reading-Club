@@ -79,11 +79,8 @@ const actions = {
         }
     },
     async logout({ commit }) {
-        try {
-            await authApi.logout()
-        } finally {
-            commit('LOGOUT')
-        }
+        // 修正：后端无 /account/logout 接口，直接本地登出
+        commit('LOGOUT')
     },
     async refreshToken({ commit, state }) {
         if (!state.refreshToken) {
