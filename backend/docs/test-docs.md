@@ -135,7 +135,8 @@
         "email": "tea@mail.com",
         "telephone": "19888998888",
         "signature": "我是老师",
-        "role": "teacher"
+        "role": "teacher",
+        "avatar_path": ""//需要拼接
     }
   }
   ```
