@@ -7,14 +7,26 @@
     <div v-if="loading" class="loading">加载中...</div>
     <div v-else-if="error" class="error-tip">{{ error }}</div>
     <ul v-else>
-      <li v-for="n in notifications" :key="n.id" :class="{ unread: !n.read }">
-        <div class="title">{{ n.title }}</div>
-        <div class="meta">
-          <span>{{ n.created_at || n.time }}</span>
-          <span v-if="!n.read" class="unread-tag">未读</span>
-        </div>
-        <button v-if="!n.read" @click="markAsRead(n.id)">标记已读</button>
-      </li>
+      <template v-for="type in groupedTypes" :key="type.key">
+        <li class="type-group">
+          <h3>{{ type.label }}</h3>
+          <ul>
+            <li v-for="n in type.list" :key="n.id" :class="{ unread: !n.read }">
+              <div class="title">
+                <router-link v-if="n.type==='journal_comment'" :to="`/comments/${n.target_id}`">{{ n.title }}</router-link>
+                <router-link v-else-if="n.type==='discussion_reply'" :to="`/circle/${n.group_id}/discussion/${n.discussion_id}`">{{ n.title }}</router-link>
+                <span v-else>{{ n.title }}</span>
+              </div>
+              <div class="meta">
+                <span>{{ n.created_at || n.time }}</span>
+                <span v-if="!n.read" class="unread-tag">未读</span>
+              </div>
+              <button v-if="!n.read" @click="markAsRead(n)">标记已读</button>
+            </li>
+            <li v-if="!type.list.length" class="empty-tip">暂无此类通知</li>
+          </ul>
+        </li>
+      </template>
       <li v-if="!notifications.length" class="empty-tip">暂无通知</li>
     </ul>
   </div>
@@ -34,6 +46,20 @@ export default {
   },
   async created() {
     await this.fetchNotifications()
+  },
+  computed: {
+    groupedTypes() {
+      // 假设后端返回 type 字段: journal_comment, discussion_reply
+      const types = [
+        { key: 'journal_comment', label: '书评评论', list: [] },
+        { key: 'discussion_reply', label: '圈子讨论回复', list: [] }
+      ]
+      for (const n of this.notifications) {
+        const t = types.find(t => t.key === n.type)
+        if (t) t.list.push(n)
+      }
+      return types
+    }
   },
   methods: {
     async fetchNotifications() {
@@ -57,9 +83,13 @@ export default {
         this.loading = false
       }
     },
-    async markAsRead(id) {
+    async markAsRead(n) {
       try {
-        await notificationsApi.markJournalCommentAsRead(id)
+        if (n.type === 'journal_comment') {
+          await notificationsApi.markJournalCommentAsRead(n.target_id)
+        } else if (n.type === 'discussion_reply') {
+          await notificationsApi.markDiscussionReplyAsRead(n.target_id)
+        }
         await this.fetchNotifications()
       } catch (e) {
         this.error = '操作失败'
@@ -104,4 +134,6 @@ li.unread .title { font-weight: bold; color: #22223b; }
 .unread-tag { color: #e74c3c; font-weight: bold; }
 button { margin-top: 0.5rem; background: #409eff; color: #fff; border: none; border-radius: 4px; padding: 0.3rem 1rem; cursor: pointer; }
 button:disabled { background: #ccc; cursor: not-allowed; }
+.type-group { margin-bottom: 1.5rem; }
+.type-group h3 { font-size: 1.2rem; margin: 0.5rem 0; }
 </style>

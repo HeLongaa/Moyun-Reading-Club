@@ -35,7 +35,9 @@ const circlesApi = {
   // 删除讨论
   deleteDiscussion: (id, discussionId) => http.delete(`/group/${id}/discussions/${discussionId}`),
   // 回复讨论
-  replyDiscussion: (id, discussionId, data) => http.post(`/group/${id}/discussions/${discussionId}/reply`, data)
+  replyDiscussion: (id, discussionId, data) => http.post(`/group/${id}/discussions/${discussionId}/reply`, data),
+  // 获取讨论回复列表
+  getDiscussionReplies: (id, discussionId) => http.get(`/group/${id}/discussions/${discussionId}/replies`)
 }
 
 export default circlesApi

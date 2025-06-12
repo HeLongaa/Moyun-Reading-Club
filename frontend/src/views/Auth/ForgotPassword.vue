@@ -1,39 +1,19 @@
 <template>
   <div class="login-bg">
     <div class="login-container">
-      <h2>欢迎登录墨韵读书会</h2>
+      <h2>找回密码</h2>
       <form @submit.prevent="handleSubmit">
         <div class="form-group">
-          <label>账号/邮箱</label>
-          <input
-            v-model="form.account"
-            required
-            placeholder="请输入账号或邮箱"
-          >
-        </div>
-        <div class="form-group">
-          <label>密码</label>
-          <input
-            v-model="form.password"
-            type="password"
-            required
-            placeholder="请输入密码"
-          >
+          <label>请输入注册邮箱</label>
+          <input v-model="email" type="email" required placeholder="请输入注册邮箱">
         </div>
         <div v-if="error" class="error-msg">{{ error }}</div>
-        <button
-          type="submit"
-          :disabled="loading"
-          class="primary-btn"
-        >
-          {{ loading ? '登录中...' : '登录' }}
+        <div v-if="success" class="success-msg">{{ success }}</div>
+        <button type="submit" :disabled="loading" class="primary-btn">
+          {{ loading ? '发送中...' : '发送重置邮件' }}
         </button>
         <div class="auth-links">
-          <router-link to="/register">没有账号？立即注册</router-link>
-          <span class="divider">|</span>
-          <router-link to="/forgot-password">忘记密码？找回密码</router-link>
-          <span class="divider">|</span>
-          <router-link to="/reset-password">重置密码</router-link>
+          <router-link to="/login">返回登录</router-link>
         </div>
       </form>
     </div>
@@ -41,37 +21,30 @@
 </template>
 
 <script>
+import authApi from '@/api/auth.api'
 export default {
-  name: 'Login',
+  name: 'ForgotPassword',
   data() {
     return {
-      form: {
-        account: '',
-        password: ''
-      },
+      email: '',
       loading: false,
-      error: ''
+      error: '',
+      success: ''
     }
   },
   methods: {
     async handleSubmit() {
       this.loading = true
       this.error = ''
+      this.success = ''
       try {
-        await this.$store.dispatch('auth/login', this.form)
-        // 登录成功后跳转到重定向页面或首页
-        const redirect = this.$route.query.redirect || '/'
-        this.$router.push(redirect)
+        await authApi.requestPasswordReset({ email: this.email })
+        this.success = '重置邮件已发送，请查收邮箱！'
       } catch (e) {
-        this.error = e.response?.data?.message || '登录失败'
+        this.error = e.response?.data?.message || '发送失败，请检查邮箱是否正确'
       } finally {
         this.loading = false
       }
-    }
-  },
-  mounted() {
-    if (this.$store.getters['auth/isAuthenticated']) {
-      this.$router.push('/')
     }
   }
 }
@@ -107,55 +80,60 @@ export default {
 }
 h2 {
   text-align: center;
-  font-size: 2rem;
+  font-size: 1.7rem;
   font-weight: 700;
   color: #222;
-  margin-bottom: 2rem;
-  letter-spacing: 2px;
+  margin-bottom: 1.6rem;
+  letter-spacing: 3px;
+  font-family: 'STKaiti', 'KaiTi', 'Segoe UI', Arial, sans-serif;
 }
 .form-group {
-  margin-bottom: 1.2rem;
+  margin-bottom: 1.3rem;
 }
 label {
   display: block;
-  font-size: 1rem;
-  color: #333;
-  margin-bottom: 0.5rem;
-  font-weight: 500;
+  font-size: 0.97rem;
+  color: #222;
+  margin-bottom: 0.38rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
 }
 input {
   width: 100%;
   padding: 0.6rem 0.8rem;
-  border-radius: 6px;
-  border: 1px solid #d0d7de;
-  font-size: 1.1rem;
+  border-radius: 8px;
+  border: 1.5px solid #d0d7de;
+  font-size: 1rem;
   margin-top: 0.1rem;
   margin-bottom: 0.2rem;
   background: #f7f9fa;
-  transition: border 0.2s;
+  transition: border 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
 }
 input:focus {
   border: 1.5px solid #409eff;
   outline: none;
   background: #fff;
+  box-shadow: 0 0 0 2px #e3f0ff;
 }
 button.primary-btn {
   width: 100%;
-  margin-top: 1rem;
-  padding: 0.7rem 0;
-  border-radius: 6px;
+  margin-top: 1.2rem;
+  padding: 0.8rem 0;
+  border-radius: 8px;
   background: linear-gradient(90deg,#409eff 60%,#6a82fb 100%);
   color: #fff;
   border: none;
-  font-size: 1.15rem;
-  font-weight: 600;
+  font-size: 1.05rem;
+  font-weight: 700;
   letter-spacing: 1px;
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(64,158,255,0.08);
-  transition: background 0.2s;
+  box-shadow: 0 2px 12px rgba(64,158,255,0.10);
+  transition: background 0.2s, box-shadow 0.2s;
 }
 button.primary-btn:hover {
   background: #3076d6;
+  box-shadow: 0 4px 16px rgba(64,158,255,0.13);
 }
 button.primary-btn:active {
   background: #357ae8;
@@ -164,27 +142,30 @@ button.primary-btn:active {
   color: #e74c3c;
   margin-bottom: 1rem;
   text-align: center;
-  font-size: 1.05rem;
+  font-size: 0.98rem;
+  font-weight: 500;
 }
-.auth-links {
-  margin-top: 1.2rem;
+.success-msg {
+  color: #67c23a;
+  margin-bottom: 1rem;
   text-align: center;
   font-size: 0.98rem;
+  font-weight: 500;
+}
+.auth-links {
+  margin-top: 1.4rem;
+  text-align: center;
+  font-size: 0.93rem;
   color: #666;
 }
 .auth-links a {
   color: #409eff;
   text-decoration: none;
   transition: color 0.2s;
+  font-weight: 500;
 }
 .auth-links a:hover {
   color: #3076d6;
   text-decoration: underline;
-}
-.divider {
-  margin: 0 0.5rem;
-  color: #ccc;
-  display: inline-block;
-  line-height: 1.5;
 }
 </style>
