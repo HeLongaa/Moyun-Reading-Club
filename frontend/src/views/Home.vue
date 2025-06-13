@@ -6,7 +6,9 @@
           <h1 class="home-title">墨韵读书会</h1>
           <p class="home-subtitle">在这里，遇见书与远方，结识志同道合的朋友</p>
         </div>
-        <img class="hero-img" src="https://img.helong.online/reading-hero.png" alt="读书会" />
+        <div class="logo-frame">
+          <img class="hero-img logo-img" src="@/assests/images/logo.png" alt="读书会" />
+        </div>
       </div>
       <!-- 横向滑动功能区 -->
       <div class="section-cards-scroll">
@@ -93,13 +95,16 @@
       </div>
       <div v-if="error" class="error-tip">{{ error }}</div>
     </div>
+    <button class="logout-float-btn" @click="logout">退出登录</button>
   </div>
 </template>
 <script setup>
 import { ref, onMounted } from 'vue'
 import homeApi from '@/api/home.api'
 import { useRouter } from 'vue-router'
+import { useStore } from 'vuex'
 const router = useRouter()
+const store = useStore()
 const goJournal = id => router.push(`/journal/${id}`)
 const goBook = id => router.push(`/books/${id}`)
 const goGroup = id => router.push(`/circle/${id}`)
@@ -127,6 +132,10 @@ const fetchHome = async () => {
       error.value = '首页加载失败，请稍后重试'
     }
   }
+}
+const logout = () => {
+  store.commit('auth/LOGOUT')
+  router.replace('/login')
 }
 onMounted(fetchHome)
 </script>
@@ -186,14 +195,22 @@ onMounted(fetchHome)
   margin-bottom: 0.7rem;
   letter-spacing: 1.5px;
 }
-.hero-img {
+.logo-frame {
   width: 200px;
   height: 140px;
-  object-fit: contain;
-  margin-left: 2.5rem;
-  border-radius: 10px;
+  border-radius: 12px;
+  overflow: hidden;
   background: #fff;
   box-shadow: 0 2px 12px #eee;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.hero-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 .section-cards-scroll {
   overflow-x: auto;
@@ -305,6 +322,25 @@ ul {
   text-align: right;
 }
 .error-tip { color: #e74c3c; text-align: center; margin: 2rem 0; font-size: 1.1rem; }
+.logout-float-btn {
+  position: fixed;
+  right: 36px;
+  bottom: 36px;
+  z-index: 100;
+  background: linear-gradient(90deg,#409eff 60%,#6a82fb 100%);
+  color: #fff;
+  border: none;
+  border-radius: 50px;
+  padding: 0.7rem 2.2rem;
+  font-size: 1.1rem;
+  font-weight: 500;
+  box-shadow: 0 2px 12px #e0e7ff;
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+.logout-float-btn:hover {
+  background: #e74c3c;
+}
 @media (max-width: 900px) {
   .home-hero {
     flex-direction: column;

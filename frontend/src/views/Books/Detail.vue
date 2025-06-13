@@ -1,58 +1,71 @@
 <template>
-  <div class="book-detail" v-if="book">
-    <div class="book-header">
-      <div class="book-info">
-        <h2 class="book-title">{{ book.title }}</h2>
-        <div class="book-meta">
-          <span>作者：{{ book.author }}</span>
-          <span>出版社：{{ book.publisher }}</span>
-          <span>类型：{{ book.type }}</span>
-        </div>
-        <div class="book-meta">
-          <span>ISBN：{{ book.isbn }}</span>
-          <span>页数：{{ book.page }}</span>
-          <span>出版日期：{{ book.publish_date?.slice(0,10) }}</span>
-        </div>
+  <div class="books-bg">
+    <div class="page-header">
+      <img class="page-logo" src="@/assests/images/logo.png" alt="logo" />
+      <div class="nav-btns">
+        <router-link to="/">首页</router-link>
+        <router-link to="/books">书籍</router-link>
+        <router-link to="/journal">书评</router-link>
+        <router-link to="/circle">圈子</router-link>
+        <router-link to="/profile">我的</router-link>
+        <router-link to="/search">搜索</router-link>
       </div>
     </div>
-    <div class="book-desc">
-      <h3>简介</h3>
-      <div class="book-description-content" v-html="fullDescription"></div>
-    </div>
-    <div class="journal-create-section">
-      <button class="journal-btn" @click="showJournalBox = !showJournalBox">
-        {{ showJournalBox ? '取消发表' : '发表书评' }}
-      </button>
-      <div v-if="showJournalBox" class="journal-create-box">
-        <input v-model="journalTitle" placeholder="书评标题" class="journal-input" />
-        <textarea v-model="journalContent" placeholder="书评内容" rows="6" class="journal-textarea"></textarea>
-        <button class="journal-btn submit" @click="submitJournal" :disabled="!journalTitle.trim() || !journalContent.trim() || submitting">
-          {{ submitting ? '提交中...' : '提交书评' }}
-        </button>
-        <div v-if="journalError" class="journal-error">{{ journalError }}</div>
-        <div v-if="journalSuccess" class="journal-success">{{ journalSuccess }}</div>
-      </div>
-    </div>
-    <div class="journal-list-section">
-      <h3>书评</h3>
-      <div v-if="journalsLoading" class="loading">书评加载中...</div>
-      <div v-else-if="journalsError" class="error-msg">{{ journalsError }}</div>
-      <ul v-else>
-        <li v-for="j in journals" :key="j.id" class="journal-item">
-          <div class="journal-title-row">
-            <span class="journal-title">{{ j.title }}</span>
-            <span class="journal-meta">
-              by {{ j.author?.account || j.author_id }}
-              <span v-if="j.publish_time"> · {{ j.publish_time.slice(0,16) }}</span>
-            </span>
+    <div class="book-detail" v-if="book">
+      <div class="book-header">
+        <div class="book-info">
+          <h2 class="book-title">{{ book.title }}</h2>
+          <div class="book-meta">
+            <span>作者：{{ book.author }}</span>
+            <span>出版社：{{ book.publisher }}</span>
+            <span>类型：{{ book.type }}</span>
           </div>
-          <div class="journal-content-preview">{{ j.first_paragraph || (j.content ? j.content.slice(0,80) : '') }}</div>
-        </li>
-        <li v-if="!journals.length" class="empty-tip">暂无书评</li>
-      </ul>
+          <div class="book-meta">
+            <span>ISBN：{{ book.isbn }}</span>
+            <span>页数：{{ book.page }}</span>
+            <span>出版日期：{{ book.publish_date?.slice(0,10) }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="book-desc">
+        <h3>简介</h3>
+        <div class="book-description-content" v-html="fullDescription"></div>
+      </div>
+      <div class="journal-create-section">
+        <button class="journal-btn" @click="showJournalBox = !showJournalBox">
+          {{ showJournalBox ? '取消发表' : '发表书评' }}
+        </button>
+        <div v-if="showJournalBox" class="journal-create-box">
+          <input v-model="journalTitle" placeholder="书评标题" class="journal-input" />
+          <textarea v-model="journalContent" placeholder="书评内容" rows="6" class="journal-textarea"></textarea>
+          <button class="journal-btn submit" @click="submitJournal" :disabled="!journalTitle.trim() || !journalContent.trim() || submitting">
+            {{ submitting ? '提交中...' : '提交书评' }}
+          </button>
+          <div v-if="journalError" class="journal-error">{{ journalError }}</div>
+          <div v-if="journalSuccess" class="journal-success">{{ journalSuccess }}</div>
+        </div>
+      </div>
+      <div class="journal-list-section">
+        <h3>书评</h3>
+        <div v-if="journalsLoading" class="loading">书评加载中...</div>
+        <div v-else-if="journalsError" class="error-msg">{{ journalsError }}</div>
+        <ul v-else>
+          <li v-for="j in journals" :key="j.id" class="journal-item">
+            <div class="journal-title-row">
+              <span class="journal-title">{{ j.title }}</span>
+              <span class="journal-meta">
+                by {{ j.author?.account || j.author_id }}
+                <span v-if="j.publish_time"> · {{ j.publish_time.slice(0,16) }}</span>
+              </span>
+            </div>
+            <div class="journal-content-preview">{{ j.first_paragraph || (j.content ? j.content.slice(0,80) : '') }}</div>
+          </li>
+          <li v-if="!journals.length" class="empty-tip">暂无书评</li>
+        </ul>
+      </div>
     </div>
+    <div v-else class="empty">未找到该书籍</div>
   </div>
-  <div v-else class="empty">未找到该书籍</div>
 </template>
 
 <script>
@@ -166,7 +179,62 @@ export default {
 </script>
 
 <style scoped>
+.books-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  min-height: 100vh;
+  min-width: 100vw;
+  background: url('@/assests/images/moyun.png') no-repeat center center;
+  background-size: cover;
+  z-index: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  overflow-y: auto;
+}
+.page-header {
+  position: absolute;
+  top: 24px;
+  right: 48px;
+  display: flex;
+  align-items: center;
+  z-index: 20;
+}
+.page-logo {
+  width: 70px;
+  height: 70px;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 2px 12px #eee;
+  object-fit: cover;
+  border: 2px solid #e0e7ff;
+  margin-right: 18px;
+}
+.nav-btns {
+  display: flex;
+  gap: 18px;
+}
+.nav-btns a {
+  color: #409eff;
+  font-weight: 500;
+  text-decoration: none;
+  padding: 6px 16px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.85);
+  transition: background 0.2s, color 0.2s;
+}
+.nav-btns a:hover {
+  background: #409eff;
+  color: #fff;
+}
 .book-detail {
+  position: relative;
+  z-index: 1;
+  margin-top: 120px;
   max-width: 700px;
   margin: 2rem auto;
   background: #fff;
