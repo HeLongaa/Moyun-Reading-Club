@@ -1,26 +1,8 @@
 <template>
   <div class="profile-bg">
-    <div class="page-header">
-      <img class="page-logo" src="@/assests/images/logo.png" alt="logo" />
-      <div class="nav-btns">
-        <router-link to="/">首页</router-link>
-        <router-link to="/books">书籍</router-link>
-        <router-link to="/journal">书评</router-link>
-        <router-link to="/circle">圈子</router-link>
-        <router-link to="/profile">我的</router-link>
-        <router-link to="/search">搜索</router-link>
-      </div>
-    </div>
     <div class="edit-profile-container">
-      <h2>编辑个人资料</h2>
       <form @submit.prevent="handleSubmit">
         <div class="form-group">
-          <label>邮箱</label>
-          <input v-model="form.email" type="email" required />
-        </div>
-        <div class="form-group">
-          <label>手机号</label>
-          <input v-model="form.telephone" required />
         </div>
         <div class="form-group">
           <label>个性签名</label>

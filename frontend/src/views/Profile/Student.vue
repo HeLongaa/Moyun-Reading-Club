@@ -24,16 +24,8 @@
           <div><strong>身份：</strong>{{ user.role === 'teacher' ? '教师' : (user.role === 'mentor' ? '导师' : '学生') }}</div>
           <div><strong>个性签名：</strong>{{ user.signature || '暂无' }}</div>
         </div>
-        <div class="profile-stats" v-if="stats">
-          <h3>我的统计</h3>
-          <ul>
-            <li>书评数：{{ stats.journalCount }}</li>
-            <li>点赞数：{{ stats.likeCount }}</li>
-            <li>评论数：{{ stats.commentCount }}</li>
-            <li>圈子数：{{ stats.groupCount }}</li>
-          </ul>
-        </div>
-        <div class="journal-summary-section">
+        <!-- 我的书评适配中间白框 -->
+        <div class="journal-summary-section white-box">
           <h3>我发表的书评</h3>
           <div v-if="journalsLoading" class="loading">加载中...</div>
           <div v-else-if="journalsError" class="error-msg">{{ journalsError }}</div>
@@ -58,7 +50,6 @@
 
 <script>
 import { mapGetters } from 'vuex'
-import { getStats } from '@/api/profile.api'
 import journalApi from '@/api/journal.api'
 export default {
   name: 'Student',
@@ -66,7 +57,6 @@ export default {
     return {
       loading: true,
       error: '',
-      stats: null,
       journals: [],
       journalsLoading: false,
       journalsError: ''
@@ -78,8 +68,6 @@ export default {
   async created() {
     try {
       await this.$store.dispatch('auth/getUserProfile')
-      const res = await getStats()
-      this.stats = res.data?.data || null
       await this.fetchMyJournals()
     } catch (e) {
       this.error = e?.message || '获取用户信息失败'
@@ -176,28 +164,18 @@ export default {
 .loading { text-align: center; color: #888; margin: 2rem 0; }
 .empty-tip { color: #aaa; text-align: center; margin: 2rem 0; font-size: 1.1rem; }
 .error-tip { color: #e74c3c; text-align: center; margin: 2rem 0; font-size: 1.1rem; }
-.profile-stats {
-  margin-top: 2rem;
-  padding-top: 1rem;
-  border-top: 1px solid #eee;
-}
-.profile-stats h3 {
-  font-size: 1.2rem;
-  margin-bottom: 1rem;
-}
-.profile-stats ul {
-  list-style: none;
-  padding: 0;
-}
-.profile-stats li {
-  margin-bottom: 0.5rem;
-  font-size: 1rem;
-}
 .journal-summary-section {
   margin-top: 2.5rem;
   background: #f7f9fa;
   border-radius: 8px;
   padding: 1.2rem 1rem;
+}
+.journal-summary-section.white-box {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px #eee;
+  padding: 1.5rem 1.2rem;
+  margin-top: 2.5rem;
 }
 .journal-summary-section h3 {
   font-size: 1.13rem;
