@@ -5,6 +5,12 @@
     <div v-else-if="error" class="error">{{ error }}</div>
     <ul v-else>
       <li v-for="circle in circles" :key="circle.id" class="circle-item">
+        <img
+          class="circle-icon"
+          :src="getIconUrl(circle.icon)"
+          alt="圈子图标"
+          @error="onImgError($event)"
+        />
         <div class="circle-title">{{ circle.name }}</div>
         <div class="circle-desc">{{ circle.description }}</div>
         <div class="circle-meta">成员数：{{ circle.member_count || circle.memberCount || 0 }}</div>
@@ -54,6 +60,15 @@ export default {
   methods: {
     viewDetail(id) {
       this.$router.push({ name: 'CircleDetail', params: { id } })
+    },
+    getIconUrl(icon) {
+      const BASE_URL = process.env.VUE_APP_BASE_API || 'http://localhost:5001/api'
+      if (!icon) return require('@/assests/images/default.png')
+      if (icon.startsWith('http')) return icon
+      return BASE_URL.replace(/\/api$/, '') + icon
+    },
+    onImgError(e) {
+      e.target.src = require('@/assests/images/default.png')
     }
   }
 }
@@ -84,6 +99,14 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 4px;
+}
+.circle-icon {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  background: #f6f6f6;
 }
 .circle-title {
   font-size: 1.15rem;

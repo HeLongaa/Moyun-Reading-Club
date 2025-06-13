@@ -1,11 +1,39 @@
 // 检查并确保所有API路径和参数与后端一致
 import http from '@/utils/api'
 
+function adaptGroup(raw) {
+  if (!raw) return {};
+  return {
+    id: raw.id,
+    name: raw.name || raw.title || '',
+    description: raw.description || raw.desc || '',
+    icon: raw.icon || raw.group_icon || '',
+    founder: raw.founder || {},
+    member_count: raw.member_count || raw.members_count || 0,
+    discussion_count: raw.discussion_count || 0,
+    created_at: raw.created_at,
+    // 兼容更多字段
+    ...raw
+  }
+}
+
 const circlesApi = {
   // 获取圈子列表
-  getGroups: (params) => http.get('/group', { params }),
+  getGroups: async (params) => {
+    const res = await http.get('/group', { params })
+    if (res.data && Array.isArray(res.data.groups)) {
+      res.data.groups = res.data.groups.map(adaptGroup)
+    }
+    return res
+  },
   // 获取圈子详情
-  getGroupDetail: (id) => http.get(`/group/${id}`),
+  getGroupDetail: async (id) => {
+    const res = await http.get(`/group/${id}`)
+    if (res.data && res.data.data) {
+      res.data.data = adaptGroup(res.data.data)
+    }
+    return res
+  },
   // 创建圈子
   createGroup: (data) => http.post('/group', data),
   // 编辑圈子

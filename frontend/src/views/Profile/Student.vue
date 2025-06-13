@@ -43,7 +43,7 @@ export default {
   async created() {
     try {
       await this.$store.dispatch('auth/getUserProfile')
-      const res = await profileApi.getProfileStats()
+      const res = await profileApi.getStats()
       this.stats = res.data?.data || null
     } catch (e) {
       this.error = e?.message || '获取用户信息失败'

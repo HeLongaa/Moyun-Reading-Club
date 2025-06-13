@@ -6,7 +6,7 @@
           <h1 class="home-title">墨韵读书会</h1>
           <p class="home-subtitle">在这里，遇见书与远方，结识志同道合的朋友</p>
         </div>
-        <img class="hero-img" src="https://img.helong.online/reading-hero.png" alt="读书会" />
+        <img class="hero-img" :src="require('@/assests/images/logo.png')" alt="读书会logo" />
       </div>
       <!-- 横向滑动功能区 -->
       <div class="section-cards-scroll">
@@ -187,13 +187,14 @@ onMounted(fetchHome)
   letter-spacing: 1.5px;
 }
 .hero-img {
-  width: 200px;
-  height: 140px;
-  object-fit: contain;
-  margin-left: 2.5rem;
-  border-radius: 10px;
+  width: 180px;
+  height: 180px;
+  object-fit: cover;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px #e0e0e0;
   background: #fff;
-  box-shadow: 0 2px 12px #eee;
+  margin-left: 2.5rem;
+  display: block;
 }
 .section-cards-scroll {
   overflow-x: auto;
