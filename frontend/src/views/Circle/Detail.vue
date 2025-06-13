@@ -1,26 +1,33 @@
 <template>
   <div class="circle-detail" v-if="group">
     <div class="circle-header">
-      <img :src="group.group_icon || defaultIcon" class="circle-icon" />
+      <!-- 圈子图标可选 -->
       <div class="circle-info">
-        <h2>{{ group.name }}</h2>
-        <p>{{ group.description }}</p>
-        <div class="circle-meta">成员数：{{ members.length }}</div>
+        <h2 class="circle-title">{{ group.name }}</h2>
+        <div class="circle-meta">
+          <span class="circle-founder">圈主：{{ group.founder_name || group.founder?.account || group.founder_id }}</span>
+          <span>成员数：{{ members.length }}</span>
+        </div>
+        <p class="circle-desc">{{ group.description }}</p>
         <div class="circle-actions">
-          <button v-if="!isMember && !pending" @click="joinGroup">加入圈子</button>
-          <span v-if="pending">等待审核中</span>
-          <button v-if="isMember && !isOwner" @click="quitGroup">退出圈子</button>
-          <button v-if="isOwner" @click="goEdit">编辑圈子</button>
-          <button v-if="isOwner" @click="deleteGroup" style="background:#e74c3c">删除圈子</button>
-          <button v-if="isOwner" @click="goReview">成员审核</button>
-          <button v-if="isOwner" @click="goSettings">设置</button>
-          <router-link to="/circle">返回圈子列表</router-link>
-          <router-link to="/">返回首页</router-link>
+          <button v-if="!isMember && !pending" class="circle-btn" @click="joinGroup">加入圈子</button>
+          <span v-if="pending" class="pending-tip">等待审核中</span>
+          <button v-if="isMember && !isOwner" class="circle-btn" @click="quitGroup">退出圈子</button>
+          <button v-if="isOwner" class="circle-btn" @click="goEdit">编辑圈子</button>
+          <button v-if="isOwner" class="circle-btn danger-btn" @click="deleteGroup">删除圈子</button>
+          <button v-if="isOwner" class="circle-btn" @click="goReview">成员审核</button>
+          <button v-if="isOwner" class="circle-btn" @click="goSettings">设置</button>
+          <button class="circle-btn" @click="goCircleList">返回圈子列表</button>
+          <button class="circle-btn" @click="goHome">返回首页</button>
         </div>
       </div>
     </div>
-    <member-list :members="members" :is-owner="isOwner" :group-id="group.id" />
-    <discussion-list :group-id="group.id" :is-member="isMember" />
+    <div class="circle-section">
+      <member-list :members="members" :is-owner="isOwner" :group-id="group.id" />
+    </div>
+    <div class="circle-section">
+      <discussion-list :group-id="group.id" :is-member="isMember" />
+    </div>
   </div>
 </template>
 <script setup>
@@ -34,10 +41,16 @@ const route = useRoute()
 const router = useRouter()
 const defaultIcon = '/static/groupIcon/default.png'
 const group = computed(() => store.getters['circle/groupDetail'])
-const members = computed(() => store.getters['circle/members'])
+const members = computed(() => {
+  const arr = store.getters['circle/members']
+  return Array.isArray(arr) ? arr : []
+})
 const user = computed(() => store.state.auth.user)
 const isOwner = computed(() => group.value && user.value && group.value.founder_id === user.value.id)
-const isMember = computed(() => members.value.some(m => m.id === user.value?.id))
+const isMember = computed(() => {
+  const arr = Array.isArray(members.value) ? members.value : []
+  return arr.some(m => m.id === user.value?.id)
+})
 const pending = ref(false)
 const fetchAll = async () => {
   await store.dispatch('circle/fetchGroupDetail', route.params.id)
@@ -65,14 +78,93 @@ const deleteGroup = async () => {
 }
 const goReview = () => router.push(`/circle/${group.value.id}/review`)
 const goSettings = () => router.push(`/circle/${group.value.id}/settings`)
+const goCircleList = () => router.push('/circle')
+const goHome = () => router.push('/')
 </script>
 <style scoped>
-.circle-detail { max-width: 900px; margin: 2rem auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 12px #eee; padding: 2rem; }
-.circle-header { display: flex; align-items: flex-start; margin-bottom: 2rem; }
-.circle-icon { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin-right: 2rem; }
-.circle-info { flex: 1; }
-.circle-meta { color: #409eff; margin: 0.5rem 0; }
-.circle-actions button { margin-right: 1rem; }
-button { background: #409eff; color: #fff; border: none; border-radius: 4px; padding: 0.4rem 1.2rem; cursor: pointer; }
-button:disabled { background: #ccc; cursor: not-allowed; }
+.circle-detail {
+  max-width: 700px;
+  margin: 2rem auto;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px #eee;
+  padding: 2rem;
+}
+.circle-header {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+  gap: 2rem;
+}
+.circle-info {
+  flex: 1;
+}
+.circle-title {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #22223b;
+  margin-bottom: 0.5rem;
+  letter-spacing: 2px;
+}
+.circle-meta {
+  color: #888;
+  font-size: 0.98rem;
+  margin-bottom: 0.5rem;
+  display: flex;
+  gap: 1.5rem;
+}
+.circle-founder {
+  color: #409eff;
+}
+.circle-desc {
+  margin-bottom: 1.2rem;
+  font-size: 1.08rem;
+  color: #22223b;
+}
+.circle-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+.circle-btn {
+  background: linear-gradient(90deg,#409eff 60%,#6a82fb 100%);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.4rem 1.2rem;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 500;
+  box-shadow: 0 2px 8px #e0e7ff;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+.circle-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+.circle-btn:hover:not(:disabled) {
+  background: #337ecc;
+}
+.danger-btn {
+  background: #e74c3c !important;
+}
+.pending-tip {
+  color: #e67e22;
+  font-weight: bold;
+}
+.circle-link {
+  color: #409eff;
+  text-decoration: underline;
+  font-size: 1rem;
+  margin-right: 0.5rem;
+}
+.circle-section {
+  margin-top: 2rem;
+}
+@media (max-width: 800px) {
+  .circle-detail { padding: 1rem; }
+  .circle-header { flex-direction: column; gap: 1rem; }
+}
 </style>

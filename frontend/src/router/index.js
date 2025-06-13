@@ -27,8 +27,7 @@ const routes = [
       {
         path: 'books/:id',
         name: 'BookDetail',
-        component: () => import('@/views/Books/Detail.vue'),
-        meta: { requiresAuth: true }
+        component: () => import('@/views/Books/Detail.vue')
       },
       {
         path: 'circle',
