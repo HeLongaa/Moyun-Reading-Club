@@ -3,17 +3,21 @@
     <div v-if="loading" class="loading">加载中...</div>
     <div v-else-if="error" class="error-tip">{{ error }}</div>
     <div v-else>
-      <h2>{{ journal.title }}</h2>
-      <div class="meta">
-        <span>作者：{{ journal.author?.account || journal.author_id }}</span>
-        <span>书籍：{{ journal.book?.title || journal.book_id }}</span>
-        <span>发布时间：{{ journal.publish_time?.slice(0,16) }}</span>
+      <div class="journal-header">
+        <div class="journal-info">
+          <h2 class="journal-title">{{ journal.title }}</h2>
+          <div class="journal-meta">
+            <span>作者：{{ journal.author?.account || journal.author_id }}</span>
+            <span>书籍：{{ journal.book?.title || journal.book_id }}</span>
+            <span>发布时间：{{ journal.publish_time?.slice(0,16) }}</span>
+          </div>
+        </div>
+        <div class="journal-actions">
+          <button @click="likeJournal" :disabled="liked">👍 {{ journal.likes_count || journal.likesCount || 0 }} 赞</button>
+          <button @click="showCommentBox = !showCommentBox">评论</button>
+        </div>
       </div>
-      <div class="content">{{ journal.content }}</div>
-      <div class="actions">
-        <button @click="likeJournal" :disabled="liked">👍 {{ journal.likes_count || journal.likesCount || 0 }} 赞</button>
-        <button @click="showCommentBox = !showCommentBox">评论</button>
-      </div>
+      <div class="journal-content">{{ journal.content }}</div>
       <div v-if="showCommentBox" class="comment-box">
         <textarea v-model="commentText" placeholder="写下你的评论..." rows="3"></textarea>
         <button @click="submitComment" :disabled="!commentText.trim()">提交</button>
@@ -129,30 +133,55 @@ export default {
   box-shadow: 0 2px 8px #eee;
   padding: 2rem;
 }
-.meta {
+.journal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 2rem;
+  margin-bottom: 1.5rem;
+}
+.journal-info {
+  flex: 1;
+}
+.journal-title {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #22223b;
+  margin-bottom: 0.5rem;
+  letter-spacing: 2px;
+}
+.journal-meta {
   color: #888;
   font-size: 0.98rem;
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
   display: flex;
   gap: 1.5rem;
 }
-.content {
+.journal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  align-items: flex-end;
+}
+button {
+  background: #409eff;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 0.4rem 1.2rem;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background 0.2s;
+}
+button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+.journal-content {
   margin-bottom: 1.5rem;
   font-size: 1.1rem;
   color: #22223b;
-}
-.actions {
-  display: flex;
-  gap: 1rem;
-  margin-bottom: 1rem;
-}
-.actions button {
-  padding: 4px 16px;
-  border: none;
-  border-radius: 4px;
-  background: #4a4e69;
-  color: #fff;
-  cursor: pointer;
+  line-height: 1.7;
 }
 .comment-box {
   margin-bottom: 1.5rem;
@@ -179,6 +208,8 @@ export default {
   color: #888;
   font-size: 0.95rem;
   margin-bottom: 0.3rem;
+  display: flex;
+  gap: 1.5rem;
 }
 .comment-meta .author {
   font-weight: bold;
@@ -208,4 +239,8 @@ export default {
   margin: 2rem 0;
 }
 .error-tip { color: #e74c3c; }
+@media (max-width: 800px) {
+  .journal-detail { padding: 1rem; }
+  .journal-header { flex-direction: column; gap: 1rem; }
+}
 </style>

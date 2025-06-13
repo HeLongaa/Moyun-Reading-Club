@@ -21,7 +21,9 @@
     <h3>成员审核</h3>
     <ul>
       <li v-for="m in pendingMembers" :key="m.user_id">
-        {{ m.user.account }} <button @click="review(m.user_id, true)">同意</button> <button @click="review(m.user_id, false)">拒绝</button>
+        {{ m.user.account }}
+        <button @click="review(m.user_id, true)">同意</button>
+        <button @click="review(m.user_id, false)">拒绝</button>
       </li>
       <li v-if="!pendingMembers.length" class="empty-tip">暂无待审核成员</li>
     </ul>

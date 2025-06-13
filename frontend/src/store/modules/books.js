@@ -47,6 +47,13 @@ const actions = {
             books = res.data.books || []
             total = res.data.total || 0
         }
+        // 保证每本书都包含 author、publisher 字段
+        books = books.map(b => ({
+            ...b,
+            author: b.author || '',
+            publisher: b.publisher || '',
+            type: b.type || ''
+        }))
         commit('SET_BOOKS', books)
         // 如有 total 相关 mutation，可一并提交
         // commit('SET_TOTAL', total)

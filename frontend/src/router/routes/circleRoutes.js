@@ -23,5 +23,14 @@ export default [
         component: () => import('@/views/Circle/CircleHome'),
         meta: { requiresAuth: true },
         props: true
+    },
+    {
+        path: '/circle/manage',
+        name: 'CircleManage',
+        component: () => import('@/views/Circle/Manage.vue'),
+        meta: {
+            requiresAuth: true,
+            requiredRoles: ['teacher', 'mentor']
+        }
     }
 ]

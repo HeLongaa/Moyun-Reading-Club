@@ -73,6 +73,8 @@ const getters = {
   discussionDetail: state => state.discussionDetail
 }
 
+// Vuex actions 已正确调用 circlesApi，无需修改
+
 export default {
   namespaced: true,
   state,

@@ -23,7 +23,7 @@ const circlesApi = {
   // 获取圈子成员
   getGroupMembers: (id) => http.get(`/group/${id}/members`),
   // 获取待审核成员
-  getPendingMembers: (groupId) => http.get(`/group/${groupId}/agree-join`),
+  getPendingMembers: (groupId) => http.get(`/group/${groupId}/pending-members`),
   // 审核成员（isOno: true/false）
   reviewMember: (groupId, userId, data) => http.post(`/group/${groupId}/review/${userId}/`, data),
   // 获取圈子讨论列表
@@ -40,4 +40,8 @@ const circlesApi = {
   getDiscussionReplies: (id, discussionId) => http.get(`/group/${id}/discussions/${discussionId}/replies`)
 }
 
+// 不存在 /group/manage 这个接口，老师的圈子管理应调用 /group 并在前端筛选 founder_id 为自己
+// 正确做法：只用 getGroups 获取全部圈子，然后前端过滤
+
 export default circlesApi
+// API接口定义与后端一致，无需修改
