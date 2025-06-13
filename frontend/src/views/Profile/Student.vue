@@ -12,18 +12,29 @@
         <div><strong>身份：</strong>{{ user.role === 'teacher' ? '教师' : (user.role === 'mentor' ? '导师' : '学生') }}</div>
         <div><strong>个性签名：</strong>{{ user.signature || '暂无' }}</div>
       </div>
+      <div class="profile-stats" v-if="stats">
+        <h3>我的统计</h3>
+        <ul>
+          <li>书评数：{{ stats.journalCount }}</li>
+          <li>点赞数：{{ stats.likeCount }}</li>
+          <li>评论数：{{ stats.commentCount }}</li>
+          <li>圈子数：{{ stats.groupCount }}</li>
+        </ul>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
 import { mapGetters } from 'vuex'
+import profileApi from '@/api/profile.api'
 export default {
   name: 'Student',
   data() {
     return {
       loading: true,
-      error: ''
+      error: '',
+      stats: null
     }
   },
   computed: {
@@ -32,6 +43,8 @@ export default {
   async created() {
     try {
       await this.$store.dispatch('auth/getUserProfile')
+      const res = await profileApi.getProfileStats()
+      this.stats = res.data?.data || null
     } catch (e) {
       this.error = e?.message || '获取用户信息失败'
     } finally {
@@ -58,4 +71,21 @@ export default {
 .loading { text-align: center; color: #888; margin: 2rem 0; }
 .empty-tip { color: #aaa; text-align: center; margin: 2rem 0; font-size: 1.1rem; }
 .error-tip { color: #e74c3c; text-align: center; margin: 2rem 0; font-size: 1.1rem; }
+.profile-stats {
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid #eee;
+}
+.profile-stats h3 {
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+}
+.profile-stats ul {
+  list-style: none;
+  padding: 0;
+}
+.profile-stats li {
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+}
 </style>

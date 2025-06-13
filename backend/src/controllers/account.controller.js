@@ -74,6 +74,7 @@ exports.register = async (req, res) => {
         role: user.role,
         token,
         avatar_path: user.avatar_path || null
+
       }
     });
   } catch (error) {
