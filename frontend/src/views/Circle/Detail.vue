@@ -12,6 +12,8 @@
           <button v-if="isMember && !isOwner" @click="quitGroup">退出圈子</button>
           <button v-if="isOwner" @click="goEdit">编辑圈子</button>
           <button v-if="isOwner" @click="deleteGroup" style="background:#e74c3c">删除圈子</button>
+          <button v-if="isOwner" @click="goReview">成员审核</button>
+          <button v-if="isOwner" @click="goSettings">设置</button>
           <router-link to="/circle">返回圈子列表</router-link>
           <router-link to="/">返回首页</router-link>
         </div>
@@ -61,6 +63,8 @@ const deleteGroup = async () => {
     router.push('/circle')
   }
 }
+const goReview = () => router.push(`/circle/${group.value.id}/review`)
+const goSettings = () => router.push(`/circle/${group.value.id}/settings`)
 </script>
 <style scoped>
 .circle-detail { max-width: 900px; margin: 2rem auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 12px #eee; padding: 2rem; }

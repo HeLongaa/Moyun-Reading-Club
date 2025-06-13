@@ -180,6 +180,12 @@ const routes = [
         name: 'Search',
         component: () => import('@/views/Search.vue'),
         meta: { requiresAuth: true }
+      },
+      {
+        path: 'circle/:id/review',
+        name: 'CircleMemberReview',
+        component: () => import('@/views/Circle/CircleMemberReview.vue'),
+        meta: { requiresAuth: true }
       }
     ]
   },
@@ -196,6 +202,16 @@ const routes = [
         path: 'register',
         name: 'Register',
         component: Register
+      },
+      {
+        path: 'forgot-password',
+        name: 'ForgotPassword',
+        component: () => import('@/views/Auth/ForgotPassword.vue')
+      },
+      {
+        path: 'reset-password',
+        name: 'ResetPassword',
+        component: () => import('@/views/Auth/ResetPassword.vue')
       }
     ]
   },
