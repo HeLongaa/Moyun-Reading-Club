@@ -60,8 +60,7 @@ exports.register = async (req, res) => {
     }
     
     // 生成JWT令牌
-    const access = generateToken(user);
-    const refresh = generateToken(user, '1d'); // 刷新令牌有效期为1天
+    const token = generateToken(user);
     
     res.status(201).json({
       success: true,
@@ -73,8 +72,7 @@ exports.register = async (req, res) => {
         telephone: user.telephone,
         signature: user.signature,
         role: user.role,
-        access,
-        refresh
+        token
       }
     });
   } catch (error) {
