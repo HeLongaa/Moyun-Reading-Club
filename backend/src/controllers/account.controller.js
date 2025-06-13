@@ -22,7 +22,7 @@ const passwordResetTokens = {};
 exports.register = async (req, res) => {
   try {
     const { account, password, email, telephone, signature, role } = req.body;
-    
+
     // 检查必要字段
     if (!account || !password) {
       return res.status(400).json({
@@ -30,7 +30,7 @@ exports.register = async (req, res) => {
         error: '用户名和密码不能为空'
       });
     }
-    
+
     // 检查用户名是否已存在
     const existingUser = await User.findOne({ where: { account } });
     if (existingUser) {
@@ -39,10 +39,10 @@ exports.register = async (req, res) => {
         error: '用户名已存在'
       });
     }
-    
+
     // 哈希密码
     const hashedPassword = await bcrypt.hash(password, 10);
-    
+
     // 创建用户
     const user = await User.create({
       account,
@@ -52,17 +52,16 @@ exports.register = async (req, res) => {
       signature: signature || '',
       role: role || 'student' // 默认角色
     });
-    
+
     // 如果提供了邮箱，发送欢迎邮件
     if (email) {
       mailService.sendRegistrationEmail(email, account)
         .catch(err => console.error('发送欢迎邮件失败:', err));
     }
-    
+
     // 生成JWT令牌
-    const access = generateToken(user);
-    const refresh = generateToken(user, '1d'); // 刷新令牌有效期为1天
-    
+    const token = generateToken(user);
+
     res.status(201).json({
       success: true,
       message: '注册成功',
@@ -73,8 +72,8 @@ exports.register = async (req, res) => {
         telephone: user.telephone,
         signature: user.signature,
         role: user.role,
-        access,
-        refresh
+        token,
+        avatar_path: user.avatar_path || null
       }
     });
   } catch (error) {
@@ -94,7 +93,7 @@ exports.register = async (req, res) => {
 exports.login = async (req, res) => {
   try {
     const { account, password } = req.body;
-    
+
     // 检查必要字段
     if (!account || !password) {
       return res.status(400).json({
@@ -107,7 +106,7 @@ exports.login = async (req, res) => {
     const isEmail = emailRegex.test(account);
 
     // 根据是否为邮箱格式查找用户
-    const user = await User.findOne({ 
+    const user = await User.findOne({
       where: isEmail ? { email: account } : { account }
     });
     if (!user) {
@@ -116,7 +115,7 @@ exports.login = async (req, res) => {
         error: '用户名或密码错误'
       });
     }
-    
+
     // 验证密码
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
@@ -125,11 +124,10 @@ exports.login = async (req, res) => {
         error: '用户名或密码错误'
       });
     }
-    
+
     // 生成JWT令牌
-    const access = generateToken(user);
-    const refresh = generateToken(user, '1d'); // 刷新令牌有效期为1天
-    
+    const token = generateToken(user);
+
     res.status(200).json({
       success: true,
       message: '登录成功',
@@ -169,7 +167,7 @@ function generateVerificationCode() {
 exports.requestPasswordReset = async (req, res) => {
   try {
     const { email } = req.body;
-    
+
     // 检查必要字段
     if (!email) {
       return res.status(400).json({
@@ -177,7 +175,7 @@ exports.requestPasswordReset = async (req, res) => {
         error: '邮箱不能为空'
       });
     }
-    
+
     // 查找用户
     const user = await User.findOne({ where: { email } });
     if (!user) {
@@ -187,20 +185,20 @@ exports.requestPasswordReset = async (req, res) => {
         message: '如果该邮箱已注册，您将收到一封包含密码重置验证的邮件'
       });
     }
-    
+
     // 生成验证码
     const verificationCode = generateVerificationCode();
-    
+
     // 存储验证码，10分钟后过期
     passwordResetTokens[email] = {
       userId: user.id,
       code: verificationCode,
       expiresAt: Date.now() + 10 * 60 * 1000 // 10分钟
     };
-    
+
     // 发送包含验证码的邮件
     await mailService.sendVerificationCode(email, verificationCode, user.account);
-    
+
     res.status(200).json({
       success: true,
       message: '如果该邮箱已注册，您将收到一封包含验证码的邮件'
@@ -222,7 +220,7 @@ exports.requestPasswordReset = async (req, res) => {
 exports.resetPassword = async (req, res) => {
   try {
     const { email, code, newPassword } = req.body;
-    
+
     // 检查必要字段
     if (!email || !code || !newPassword) {
       return res.status(400).json({
@@ -230,7 +228,7 @@ exports.resetPassword = async (req, res) => {
         error: '邮箱、验证码和新密码不能为空'
       });
     }
-    
+
     // 验证验证码
     const resetInfo = passwordResetTokens[email];
     if (!resetInfo || resetInfo.code !== code || resetInfo.expiresAt < Date.now()) {
@@ -239,7 +237,7 @@ exports.resetPassword = async (req, res) => {
         error: '验证码无效或已过期'
       });
     }
-    
+
     // 查找用户
     const user = await User.findByPk(resetInfo.userId);
     if (!user) {
@@ -248,16 +246,16 @@ exports.resetPassword = async (req, res) => {
         error: '用户不存在'
       });
     }
-    
+
     // 哈希新密码
     const hashedPassword = await bcrypt.hash(newPassword, 10);
-    
+
     // 更新密码
     await user.update({ password: hashedPassword });
-    
+
     // 删除验证码记录
     delete passwordResetTokens[email];
-    
+
     res.status(200).json({
       success: true,
       message: '密码重置成功'
@@ -280,19 +278,19 @@ exports.getCurrentUser = async (req, res) => {
   try {
     // 从请求中获取用户ID
     const userId = req.user.id;
-    
+
     // 查找用户
     const user = await User.findByPk(userId, {
       attributes: ['id', 'account', 'email', 'telephone', 'signature', 'role', 'avatar_path']
     });
-    
+
     if (!user) {
       return res.status(404).json({
         success: false,
         error: '用户不存在'
       });
     }
-    
+
     res.status(200).json({
       success: true,
       data: user
@@ -315,7 +313,7 @@ exports.changePassword = async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
     const userId = req.user.id;
-    
+
     // 检查必要字段
     if (!currentPassword || !newPassword) {
       return res.status(400).json({
@@ -323,7 +321,7 @@ exports.changePassword = async (req, res) => {
         error: '当前密码和新密码不能为空'
       });
     }
-    
+
     // 查找用户
     const user = await User.findByPk(userId);
     if (!user) {
@@ -332,7 +330,7 @@ exports.changePassword = async (req, res) => {
         error: '用户不存在'
       });
     }
-    
+
     // 验证当前密码
     const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
     if (!isPasswordValid) {
@@ -341,13 +339,13 @@ exports.changePassword = async (req, res) => {
         error: '当前密码错误'
       });
     }
-    
+
     // 哈希新密码
     const hashedPassword = await bcrypt.hash(newPassword, 10);
-    
+
     // 更新密码
     await user.update({ password: hashedPassword });
-    
+
     res.status(200).json({
       success: true,
       message: '密码修改成功'

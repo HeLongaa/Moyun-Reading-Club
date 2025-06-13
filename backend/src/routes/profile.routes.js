@@ -4,6 +4,7 @@
 const express = require('express');
 const { verifyToken } = require('../middlewares/auth');
 const profileController = require('../controllers/profile.controller');
+const groupController = require('../controllers/group.controller');
 const FileManager = require('../services/fileManager');
 
 const router = express.Router();
@@ -27,4 +28,7 @@ router.post(
 router.get('/stats/get/:id?', verifyToken, profileController.getProfileStats);
 // router.get('/stat/:id?', verifyToken, profileController.getUserStats);
 
-module.exports = router; 
+module.exports = router;
+
+// 获取用户加入的圈子
+router.get('/group/me-join', verifyToken, groupController.getUserGroups);
