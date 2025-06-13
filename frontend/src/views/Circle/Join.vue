@@ -1,13 +1,44 @@
 <template>
   <div class="circle-join-page">
     <h2>加入圈子</h2>
-    <p>圈子加入功能开发中，敬请期待。</p>
+    <div v-if="joined" class="success-tip">已提交申请，等待圈主审核</div>
+    <div v-else>
+      <button @click="join" :disabled="loading">{{ loading ? '提交中...' : '提交加入申请' }}</button>
+      <div v-if="error" class="error-tip">{{ error }}</div>
+    </div>
   </div>
 </template>
 
 <script>
+import circlesApi from '@/api/circles.api'
 export default {
-  name: 'CircleJoin'
+  name: 'CircleJoin',
+  data() {
+    return {
+      loading: false,
+      error: '',
+      joined: false
+    }
+  },
+  methods: {
+    async join() {
+      this.loading = true
+      this.error = ''
+      try {
+        const id = this.$route.params.id
+        const res = await circlesApi.joinGroup(id)
+        if (res.success) {
+          this.joined = true
+        } else {
+          this.error = res.error || res.message || '提交失败'
+        }
+      } catch (e) {
+        this.error = e?.response?.data?.error || e?.message || '提交失败'
+      } finally {
+        this.loading = false
+      }
+    }
+  }
 }
 </script>
 
@@ -21,4 +52,6 @@ export default {
   padding: 2rem;
   text-align: center;
 }
+.success-tip { color: #67c23a; margin-top: 1rem; }
+.error-tip { color: #e74c3c; margin-top: 1rem; }
 </style>

@@ -9,6 +9,8 @@
         <router-link to="/journal">书评</router-link>
         <router-link to="/chat">消息</router-link>
         <router-link to="/profile">个人中心</router-link>
+        <!-- 圈子管理入口，仅教师/导师可见 -->
+        <router-link v-if="isTeacher" to="/circle/manage">圈子管理</router-link>
         <button class="logout-btn" @click="logout">退出登录</button>
       </nav>
     </header>
@@ -21,6 +23,12 @@
 <script>
 export default {
   name: 'MainLayout',
+  computed: {
+    isTeacher() {
+      const user = this.$store?.state?.auth?.user
+      return user && (user.role === 'teacher' || user.role === 'mentor')
+    }
+  },
   methods: {
     async logout() {
       await this.$store.dispatch('auth/logout')

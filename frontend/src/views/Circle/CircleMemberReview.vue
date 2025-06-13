@@ -1,46 +1,60 @@
 <template>
   <div class="circle-member-review">
     <h2>待审核成员列表</h2>
+    <div v-if="error" style="color:red">{{ error }}</div>
     <div v-if="loading">加载中...</div>
-    <div v-else>
-      <div v-if="members.length === 0">暂无待审核成员</div>
-      <ul>
-        <li v-for="member in members" :key="member.id" class="member-item">
-          <span>{{ member.account }}（{{ member.email }}）</span>
-          <button @click="reviewMember(member.id, true)">同意</button>
-          <button @click="reviewMember(member.id, false)">拒绝</button>
-        </li>
-      </ul>
-    </div>
+    <ul v-else>
+      <li v-for="m in pendingMembers" :key="m.user_id" class="member-item">
+        {{ m.user?.account || m.user_id }}
+        <button @click="review(m.user_id, true)">同意</button>
+        <button @click="review(m.user_id, false)">拒绝</button>
+      </li>
+      <li v-if="!pendingMembers.length && !error && !loading">暂无待审核成员</li>
+    </ul>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import { useRoute } from 'vue-router';
-import { getPendingMembers, reviewMemberApi } from '@/api/circles.api';
+import { ref, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
+import circlesApi from '@/api/circles.api'
 
-const route = useRoute();
-const groupId = route.params.id;
-const members = ref([]);
-const loading = ref(true);
+const route = useRoute()
+const groupId = route.params.id
+const pendingMembers = ref([])
+const error = ref('')
+const loading = ref(false)
 
-const fetchMembers = async () => {
-  loading.value = true;
+async function fetchMembers() {
+  error.value = ''
+  loading.value = true
   try {
-    const res = await getPendingMembers(groupId);
-    members.value = res.data || [];
+    const res = await circlesApi.getPendingMembers(groupId)
+    if (res.success) {
+      // 兼容返回数组或 data 字段
+      pendingMembers.value = Array.isArray(res.data) ? res.data : (res.data?.pendingMembers || res.data || [])
+    } else {
+      error.value = res.error || '加载失败'
+      pendingMembers.value = []
+    }
+  } catch (e) {
+    error.value = e?.response?.data?.error || e.message || '请求失败'
+    pendingMembers.value = []
   } finally {
-    loading.value = false;
+    loading.value = false
   }
-};
+}
 
-const reviewMember = async (userId, isOno) => {
-  await reviewMemberApi(groupId, userId, isOno);
-  await fetchMembers();
-};
+async function review(userId, isOno) {
+  try {
+    await circlesApi.reviewMember(groupId, userId, { isOno })
+    await fetchMembers()
+  } catch (e) {
+    error.value = e?.response?.data?.error || e.message || '操作失败'
+  }
+}
 
-onMounted(fetchMembers);
+onMounted(fetchMembers)
 </script>
 
 <style scoped>

@@ -1,14 +1,23 @@
 <template>
   <div class="circle-list">
     <h2>圈子列表</h2>
+    <div v-if="isTeacherOrAdmin" style="margin-bottom: 1em;">
+      <button @click="createCircle">创建圈子</button>
+      <label style="margin-left:1em;">
+        <input type="checkbox" v-model="showMine" />
+        只看我管理的圈子
+      </label>
+    </div>
     <div v-if="loading" class="loading">加载中...</div>
     <div v-else-if="error" class="error">{{ error }}</div>
     <ul v-else>
-      <li v-for="circle in circles" :key="circle.id" class="circle-item">
+      <li v-for="circle in filteredCircles" :key="circle.id" class="circle-item">
         <div class="circle-title">{{ circle.name }}</div>
         <div class="circle-desc">{{ circle.description }}</div>
-        <div class="circle-meta">成员数：{{ circle.member_count || circle.memberCount || 0 }}</div>
+        <div class="circle-meta">成员数：{{ circle.memberCount || circle.member_count || 0 }}</div>
         <button @click="viewDetail(circle.id)">查看详情</button>
+        <button v-if="isTeacherOrAdmin && circle.founder_id === myId" @click="editCircle(circle.id)">管理</button>
+        <button v-if="isTeacherOrAdmin && circle.founder_id === myId" @click="reviewCircle(circle.id)">成员审核</button>
       </li>
     </ul>
   </div>
@@ -23,7 +32,23 @@ export default {
     return {
       loading: true,
       circles: [],
-      error: ''
+      error: '',
+      showMine: false
+    }
+  },
+  computed: {
+    myId() {
+      return this.$store.state.auth?.user?.id
+    },
+    myRole() {
+      return this.$store.state.auth?.user?.role
+    },
+    isTeacherOrAdmin() {
+      return this.myRole === 'teacher' || this.myRole === 'admin'
+    },
+    filteredCircles() {
+      if (!this.isTeacherOrAdmin || !this.showMine) return this.circles
+      return this.circles.filter(c => c.founder_id === this.myId)
     }
   },
   async created() {
@@ -54,6 +79,15 @@ export default {
   methods: {
     viewDetail(id) {
       this.$router.push({ name: 'CircleDetail', params: { id } })
+    },
+    editCircle(id) {
+      this.$router.push({ name: 'CircleEdit', params: { id } })
+    },
+    createCircle() {
+      this.$router.push({ name: 'CircleEdit', params: { id: 'new' } })
+    },
+    reviewCircle(id) {
+      this.$router.push({ name: 'CircleSettings', params: { id } })
     }
   }
 }
