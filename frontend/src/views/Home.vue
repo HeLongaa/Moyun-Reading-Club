@@ -87,10 +87,6 @@
             <h2><span class="icon">🤖</span> AI 聊天助手</h2>
             <router-link to="/ai/chat" class="more-link">AI 聊天助手 &gt;</router-link>
           </div>
-          <div class="section-card">
-            <h2><span class="icon">📈</span> 个人统计</h2>
-            <router-link to="/profile/stats" class="more-link">查看统计 &gt;</router-link>
-          </div>
         </div>
       </div>
       <div v-if="error" class="error-tip">{{ error }}</div>

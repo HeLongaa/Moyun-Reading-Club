@@ -1,16 +1,5 @@
 <template>
   <div class="search-bg">
-    <div class="page-header">
-      <img class="page-logo" src="@/assests/images/logo.png" alt="logo" />
-      <div class="nav-btns">
-        <router-link to="/">首页</router-link>
-        <router-link to="/books">书籍</router-link>
-        <router-link to="/journal">书评</router-link>
-        <router-link to="/circle">圈子</router-link>
-        <router-link to="/profile">我的</router-link>
-        <router-link to="/search">搜索</router-link>
-      </div>
-    </div>
     <div class="search-page">
       <div class="search-bar">
         <input v-model="keyword" placeholder="搜索书籍、书评、用户、圈子..." @keyup.enter="doSearch" />
@@ -25,23 +14,61 @@
       </div>
       <div v-if="loading" class="loading">搜索中...</div>
       <div v-else>
-        <div v-if="results.book?.length">
-          <h3>书籍</h3>
-          <ul><li v-for="b in results.book" :key="b.id">{{ b.title }} - {{ b.author }}</li></ul>
-        </div>
-        <div v-if="results.journal?.length">
-          <h3>书评</h3>
-          <ul><li v-for="j in results.journal" :key="j.id">{{ j.title }} - {{ j.authorName }}</li></ul>
-        </div>
-        <div v-if="results.user?.length">
-          <h3>用户</h3>
-          <ul><li v-for="u in results.user" :key="u.id">{{ u.account }} ({{ u.role }})</li></ul>
-        </div>
-        <div v-if="results.group?.length">
-          <h3>圈子</h3>
-          <ul><li v-for="g in results.group" :key="g.id">{{ g.name }}</li></ul>
-        </div>
-        <div v-if="!results.book?.length && !results.journal?.length && !results.user?.length && !results.group?.length && !loading" class="empty-tip">
+        <!-- 全部类型时显示所有分类 -->
+        <template v-if="!type">
+          <div v-if="results.book.length">
+            <h3>书籍</h3>
+            <ul>
+              <li v-for="b in results.book" :key="b.id">{{ b.title }} - {{ b.author }}</li>
+            </ul>
+          </div>
+          <div v-if="results.journal.length">
+            <h3>书评</h3>
+            <ul>
+              <li v-for="j in results.journal" :key="j.id">{{ j.title }} - {{ j.authorName || j.author?.account || j.author_id }}</li>
+            </ul>
+          </div>
+          <div v-if="results.user.length">
+            <h3>用户</h3>
+            <ul>
+              <li v-for="u in results.user" :key="u.id">{{ u.account }} ({{ u.role }})</li>
+            </ul>
+          </div>
+          <div v-if="results.group.length">
+            <h3>圈子</h3>
+            <ul>
+              <li v-for="g in results.group" :key="g.id">{{ g.name }}</li>
+            </ul>
+          </div>
+        </template>
+        <!-- 指定类型时只显示该类型 -->
+        <template v-else>
+          <div v-if="type==='book' && results.book.length">
+            <h3>书籍</h3>
+            <ul>
+              <li v-for="b in results.book" :key="b.id">{{ b.title }} - {{ b.author }}</li>
+            </ul>
+          </div>
+          <div v-if="type==='journal' && results.journal.length">
+            <h3>书评</h3>
+            <ul>
+              <li v-for="j in results.journal" :key="j.id">{{ j.title }} - {{ j.authorName || j.author?.account || j.author_id }}</li>
+            </ul>
+          </div>
+          <div v-if="type==='user' && results.user.length">
+            <h3>用户</h3>
+            <ul>
+              <li v-for="u in results.user" :key="u.id">{{ u.account }} ({{ u.role }})</li>
+            </ul>
+          </div>
+          <div v-if="type==='group' && results.group.length">
+            <h3>圈子</h3>
+            <ul>
+              <li v-for="g in results.group" :key="g.id">{{ g.name }}</li>
+            </ul>
+          </div>
+        </template>
+        <div v-if="!hasAnyResult && !loading" class="empty-tip">
           无搜索结果
         </div>
       </div>
@@ -49,17 +76,60 @@
   </div>
 </template>
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import searchApi from '@/api/search.api'
 const keyword = ref('')
 const type = ref('')
 const loading = ref(false)
-const results = ref({})
+const results = ref({
+  book: [],
+  journal: [],
+  user: [],
+  group: []
+})
+
+const hasAnyResult = computed(() =>
+  results.value.book.length ||
+  results.value.journal.length ||
+  results.value.user.length ||
+  results.value.group.length
+)
+
 const doSearch = async () => {
   if (!keyword.value) return
   loading.value = true
-  const res = await searchApi.search({ keyword: keyword.value, type: type.value })
-  results.value = res.data || {}
+  results.value = { book: [], journal: [], user: [], group: [] }
+  try {
+    const res = await searchApi.search({
+      keyword: keyword.value,
+      type: type.value,
+      page: 1,
+      limit: 50
+    })
+    const data = res?.data?.data || {}
+    let arr = []
+    if (Array.isArray(data.results)) {
+      arr = data.results
+    } else if (Array.isArray(data)) {
+      arr = data
+    } else if (Array.isArray(res?.data?.results)) {
+      arr = res.data.results
+    }
+    results.value = { book: [], journal: [], user: [], group: [] }
+    arr.forEach(item => {
+      if (item.title && item.author && item.isbn) {
+        results.value.book.push(item)
+      } else if (item.title && (item.authorName || item.author_id || item.author)) {
+        results.value.journal.push(item)
+      } else if (item.account && item.role) {
+        results.value.user.push(item)
+      } else if (item.name && (item.founder_id || item.founder)) {
+        results.value.group.push(item)
+      }
+    })
+  } catch (e) {
+    results.value = { book: [], journal: [], user: [], group: [] }
+  }
   loading.value = false
 }
 </script>
@@ -136,3 +206,4 @@ ul { margin: 0.5rem 0 1rem 1.5rem; }
 .loading { text-align: center; color: #888; margin: 2rem 0; }
 .empty-tip { color: #aaa; text-align: center; margin: 2rem 0; font-size: 1.1rem; }
 </style>
+
