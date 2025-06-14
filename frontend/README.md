@@ -1,82 +1,130 @@
-## 墨韵读书会前端结构说明（2025.6.11 更新）
+## 墨韵读书会前端结构说明（2025.6.13 更新）
 
 ### 项目简介
 本前端基于 Vue3 + Vuex4 + Vue Router4，采用模块化、分层设计，支持教师/学生角色区分，功能包括用户认证、主界面、个人中心、书籍、圈子、书评、讨论、聊天、通知、搜索等，API与后端文档一致。
 
-### 主要目录结构
+### 完善后的主要目录结构
 ```plain text
 frontend/
-├── public/                  # 静态资源
+├── public/                        # 静态资源
 │   ├── favicon.ico
 │   └── index.html
 │
 ├── src/
-│   ├── api/                 # API服务层（所有后端接口请求）
-│   │   ├── auth.api.js
-│   │   ├── books.api.js
-│   │   ├── circles.api.js
-│   │   ├── comments.api.js
-│   │   ├── notifications.api.js
-│   │   ├── profile.api.js
-│   │   ├── search.api.js
-│   │   └── websocket.js
+│   ├── api/                       # API服务层（所有后端接口请求）
+│   │   ├── auth.api.js            # 用户认证与登录注册相关接口
+│   │   ├── books.api.js           # 书籍相关接口（增删改查、上传内容/封面、类型获取等）
+│   │   ├── circles.api.js         # 圈子相关接口（圈子CRUD、成员、审核、讨论、图标上传等）
+│   │   ├── comments.api.js        # 书评评论相关接口（评论增删查、点赞、回复等）
+│   │   ├── notifications.api.js   # 消息通知相关接口（获取未读、标记已读等）
+│   │   ├── profile.api.js         # 个人中心相关接口（获取/修改资料、统计等）
+│   │   ├── search.api.js          # 全局搜索接口
+│   │   └── websocket.js           # WebSocket 实时通信接口
 │   │
-│   ├── assets/              # 静态资源（图片、样式等）
-│   │   ├── scss/            # 样式系统（_variables.scss/_mixins.scss/组件样式等）
-│   │   └── images/
+│   ├── assets/                    # 静态资源（图片、样式等）
+│   │   ├── images/                # 项目图片
+│   │   └── scss/                  # 样式系统（_variables.scss/_mixins.scss/组件样式等）
 │   │
-│   ├── components/          # 组件库（按功能模块细分）
-│   │   ├── auth/            # 认证相关
-│   │   ├── books/           # 图书模块
-│   │   ├── circles/         # 学习圈系统
-│   │   ├── comments/        # 评论系统
-│   │   └── ui/              # 基础UI
+│   ├── components/                # 组件库（按功能模块细分）
+│   │   ├── auth/                  # 认证相关组件
+│   │   ├── books/                 # 图书相关组件
+│   │   ├── circles/               # 圈子相关组件
+│   │   ├── comments/              # 评论相关组件
+│   │   └── ui/                    # 通用UI组件
 │   │
-│   ├── layouts/             # 页面布局（如 MainLayout.vue, AuthLayout.vue）
+│   ├── layouts/                   # 页面布局
+│   │   ├── MainLayout.vue
+│   │   └── AuthLayout.vue
 │   │
-│   ├── router/              # 路由系统
-│   │   ├── guards/          # 路由守卫
-│   │   ├── routes/          # 各功能模块路由
-│   │   └── index.js         # 路由入口
+│   ├── router/                    # 路由系统
+│   │   ├── guards/                # 路由守卫
+│   │   ├── index.js               # 路由主入口
 │   │
-│   ├── store/               # Vuex状态管理
-│   │   ├── modules/         # 各功能模块store
-│   │   └── index.js         # Store主文件
+│   ├── store/                     # Vuex状态管理
+│   │   ├── getter.js
+│   │   ├── index.js
+│   │   └── modules/               # 各功能模块store
+│   │       ├── auth.js
+│   │       ├── books.js
+│   │       ├── circles.js
+│   │       ├── comments.js
+│   │       └── notifications.js
 │   │
-│   ├── utils/               # 工具库
-│   │   ├── api.js           # 请求封装
-│   │   ├── auth.js          # 认证工具
-│   │   ├── cache.js         # 缓存管理
-│   │   └── notifications.js # 通知工具
+│   ├── utils/                     # 工具库
+│   │   ├── api.js                 # axios封装
+│   │   ├── auth.js                # 认证工具
+│   │   ├── cache.js               # 缓存管理
+│   │   └── notifications.js       # 通知工具
 │   │
-│   ├── views/               # 主视图页面
-│   │   ├── Auth/            # 登录/注册
-│   │   ├── Circle/          # 圈子相关
-│   │   ├── Books/           # 图书相关
-│   │   ├── Profile/         # 个人中心
-│   │   ├── Error/           # 错误页
-│   │   └── Comments/        # 评论详情等
+│   ├── views/                     # 主视图页面
+│   │   ├── AI/
+│   │   │   ├── Chat.vue
+│   │   │   └── Recommend.vue
+│   │   ├── Auth/
+│   │   │   ├── ForgotPassword.vue
+│   │   │   ├── Login.vue
+│   │   │   ├── Register.vue
+│   │   │   └── ResetPassword.vue
+│   │   ├── Books/
+│   │   │   ├── Create.vue
+│   │   │   ├── Detail.vue
+│   │   │   ├── Edit.vue
+│   │   │   ├── Explore.vue
+│   │   │   ├── List.vue
+│   │   │   └── Upload.vue
+│   │   ├── Circle/
+│   │   │   ├── CircleHome.vue
+│   │   │   ├── Create.vue
+│   │   │   ├── Detail.vue
+│   │   │   ├── Discussion.vue
+│   │   │   ├── DiscussionDetail.vue
+│   │   │   ├── Edit.vue
+│   │   │   ├── Join.vue
+│   │   │   ├── Library.vue
+│   │   │   ├── List.vue
+│   │   │   ├── Manage.vue
+│   │   │   ├── Members.vue
+│   │   │   ├── Settings.vue
+│   │   │   └── CircleMemberReview.vue
+│   │   ├── Comments/
+│   │   │   └── CommentDetail.vue
+│   │   ├── Error/
+│   │   │   └── NotFound.vue
+│   │   ├── Journal/
+│   │   │   ├── Detail.vue
+│   │   │   ├── Edit.vue
+│   │   │   └── List.vue
+│   │   ├── Profile/
+│   │   │   ├── Edit.vue
+│   │   │   ├── Mentor.vue
+│   │   │   ├── Notifications.vue
+│   │   │   ├── Stats.vue
+│   │   │   ├── Student.vue
+│   │   │   └── index.vue
+│   │   ├── Chat/
+│   │   │   └── ChatWindow.vue
+│   │   ├── Home.vue
+│   │   └── Search.vue
 │   │
-│   ├── App.vue              # 根组件
-│   └── main.js              # 应用入口
+│   ├── App.vue                  # 根组件
+│   └── main.js                  # 应用入口
 │
-├── tests/                   # 测试
-│   ├── unit/                # 单元测试
-│   └── e2e/                 # 端到端测试
+├── tests/                       # 测试
+│   ├── unit/                    # 单元测试
+│   └── e2e/                     # 端到端测试
 │
-├── .env*                    # 环境变量
-├── .eslintrc.js             # 代码规范
-├── babel.config.js          # Babel配置
-└── vue.config.js            # Vue CLI配置
+├── .env*                        # 环境变量
+├── .eslintrc.js                 # 代码规范
+├── babel.config.js              # Babel配置
+└── vue.config.js                # Vue CLI配置
 ```
 
 ### 主要功能模块
 - 用户认证（登录/注册/权限控制）
 - 主界面（首页/导航/推荐/热门/诗词）
-- 个人中心（资料、密码、头像、统计）
+- 个人中心（资料、密码、统计）
 - 搜索（书籍、书评、用户、圈子）
 - 圈子（列表、详情、成员、讨论、书评、管理）
-- 聊天与通知（WebSocket 实时推送）
 - 书籍与书评（浏览、分享、互动）
 
 ### 近期修订说明
@@ -129,60 +177,132 @@ frontend/
    - 确认 `frontend/.env` 文件中 `VUE_APP_API_BASE_URL` 配置为后端实际地址（如 `http://localhost:8000`）。
    - 如需更改端口，可在 `.env` 或 `package.json` 中配置。
 
+---
 
+### 各 Vue 页面内容简要说明
 
-## 后端功能未在前端体现的部分（2025.6.12 检查）
+#### views/Home.vue
+- 项目首页，展示推荐书评、热门书籍、活跃圈子、今日诗词、AI推荐、AI助手、上传书籍等功能区块，支持横向滑动卡片展示。
 
-### 1. 圈子审核与成员管理
-- 后端支持圈子成员审核（如 `/group/:id/agree-join`、`/group/:id/review/:userId/`），但前端未见圈主/管理员审核成员的页面或入口。
-- 建议前端在圈子详情页或圈子设置页增加“成员审核”功能。
+#### views/Search.vue
+- 全站综合搜索页面，支持按关键字检索书籍、书评、用户、圈子，并分类展示结果。
 
-### 2. 圈子设置/管理
-- 后端支持圈子信息编辑、圈子图标上传等（如 `/group/:id/settings`、`/group/upload-icon/:id`），但前端未见圈子设置页面（如 CircleSettings.vue）和图标上传入口。
-- 建议前端补充圈子设置页面，支持圈主/管理员修改圈子信息、上传图标。
+#### views/Auth/Login.vue
+- 用户登录页面，输入账号密码进行身份验证。
 
-### 3. 讨论详情与回复
-- 后端支持讨论详情、回复、删除（如 `/group/:id/discussions/:discussionId`），但前端未见讨论详情页（如 DiscussionDetail.vue）和回复功能。
-- 建议前端补充讨论详情页面，支持查看讨论内容、回复、删除等操作。
+#### views/Auth/Register.vue
+- 用户注册页面，填写基本信息完成注册。
 
-### 4. 书评详情页
-- 后端 `/journal/:id` 支持书评详情，但前端 Journal/Detail.vue 未在路由和页面中体现（如需完整书评内容、评论、点赞等）。
-- 建议前端补充书评详情页，支持评论、点赞、回复等。
+#### views/Auth/ForgotPassword.vue
+- 忘记密码页面，支持通过邮箱找回密码。
 
-### 5. 书评评论详情与互动
-- 后端 `/comment/:id` 支持评论详情、点赞、回复，但前端仅有简单评论详情页，未见完整的评论互动功能。
-- 建议前端补充评论详情页，支持评论点赞、回复、嵌套展示等。
+#### views/Auth/ResetPassword.vue
+- 重置密码页面，用户通过邮箱验证码重置新密码。
 
-### 6. 书籍上传与封面上传
-- 后端支持书籍内容上传、封面上传（如 `/book/upload/:id`、`/book/upload-cover/:id`），但前端未见上传入口。
-- 建议前端在书籍编辑/创建页增加上传书籍文件和封面功能。
+#### views/Profile/index.vue
+- 个人中心主页，展示用户基本信息、操作入口（如编辑资料、退出登录）。
 
-### 7. 个人资料统计
-- 后端 `/profile/stats/get/:id?` 支持用户统计信息（书评数、圈子数等），但前端个人中心未见统计展示。
-- 建议前端在 Profile 页面增加统计信息展示。
+#### views/Profile/Edit.vue
+- 编辑个人资料页面，支持修改邮箱、手机号、个性签名等信息。
 
-### 8. 消息通知细分
-- 后端 `/message/unread` 返回书评评论和圈子讨论回复的未读消息，前端通知中心仅简单展示，未区分类型。
-- 建议前端通知中心细分展示不同类型通知，并支持跳转到相关详情页。
+#### views/Profile/Student.vue
+- 学生用户个人中心，展示个人信息和我发表的书评。
 
-### 9. 退出圈子、删除圈子
-- 后端支持圈子成员退出、圈主删除圈子，但前端部分页面未见对应操作按钮或入口。
+#### views/Profile/Mentor.vue
+- 导师用户个人中心，展示导师信息。
 
-### 10. 书籍推荐/AI助手
-- 后端 `/public/recommend-books`、`/public/chat` 支持 AI 书籍推荐、AI 聊天，前端未见相关入口和页面。
-- 建议前端补充 AI 书籍推荐、AI 聊天助手入口。
+#### views/Profile/Stats.vue
+- 个人统计页面，展示书评数、点赞数、评论数、圈子数等统计信息。
 
-### 现存主要问题（2025.6.13）
+#### views/Profile/Notifications.vue
+- 消息通知页面，展示未读消息、评论、圈子讨论等通知。
 
-- 书籍、圈子、用户等图片路径依赖 assests 目录，建议后续统一为 assets 以避免拼写混乱。
-- 书籍详情页部分内容渲染样式有待进一步优化，长文本阅读体验需提升。
-- 圈子、书籍等部分数据接口返回结构不统一，前端需做兼容处理。
-- 个人中心部分统计数据偶有延迟或加载失败，需优化接口调用与错误提示。
-- 通知中心部分类型跳转目标页面未完全实现。
-- AI 相关功能（如推荐、聊天）界面交互和历史记录功能有待完善。
-- 移动端适配和响应式布局仍需进一步优化，部分页面在小屏设备下显示不佳。
-- 代码中部分样式与组件存在重复，建议后续进行统一与抽离。
-- 由于 assests 拼写问题，部分新开发成员易出现图片加载路径错误。
-- 目前部分页面缺少单元测试和端到端测试，建议补充自动化测试覆盖率。
+#### views/Books/List.vue
+- 书籍列表页，展示所有书籍，支持筛选、分页。
+
+#### views/Books/Detail.vue
+- 书籍详情页，展示书籍详细信息、简介、评分、封面、相关书评等。
+
+#### views/Books/Create.vue
+- 发布新书籍页面，填写书籍信息并上传内容、封面。
+
+#### views/Books/Edit.vue
+- 编辑书籍信息页面，支持修改书籍详情、上传内容和封面。
+
+#### views/Books/Upload.vue
+- 上传电子书文件页面，供管理员或教师上传书籍内容。
+
+#### views/Books/Explore.vue
+- 书籍探索页，按类型、标签等方式浏览书籍。
+
+#### views/Journal/List.vue
+- 书评列表页，展示所有书评，支持筛选、分页。
+
+#### views/Journal/Detail.vue
+- 书评详情页，展示完整书评内容、评论、点赞等互动。
+
+#### views/Journal/Edit.vue
+- 编辑书评页面，支持修改书评内容、头图。
+
+#### views/Comments/CommentDetail.vue
+- 评论详情页，展示评论内容、回复、点赞、嵌套回复等。
+
+#### views/Circle/List.vue
+- 圈子列表页，展示所有圈子，支持筛选、只看我管理的圈子。
+
+#### views/Circle/Detail.vue
+- 圈子详情页，展示圈子信息、成员、讨论、书库等入口。
+
+#### views/Circle/CircleHome.vue
+- 圈子主页，包含圈子基本信息、导航菜单（讨论区、书库、成员、设置等）。
+
+#### views/Circle/Create.vue
+- 新建圈子页面，填写圈子名称、简介、上传图标。
+
+#### views/Circle/Edit.vue
+- 编辑圈子信息页面，支持圈主/管理员修改圈子信息、上传图标。
+
+#### views/Circle/Join.vue
+- 加入圈子页面，选择导师或圈子申请加入。
+
+#### views/Circle/Library.vue
+- 圈子书库页面，展示圈子内共享的书籍。
+
+#### views/Circle/Members.vue
+- 圈子成员列表页，展示所有成员及其信息。
+
+#### views/Circle/Discussion.vue
+- 圈子讨论区主页，展示所有讨论主题。
+
+#### views/Circle/DiscussionList.vue
+- 圈子讨论主题列表页，支持新建、浏览讨论。
+
+#### views/Circle/DiscussionDetail.vue
+- 讨论详情页，展示讨论内容、回复、删除等操作。
+
+#### views/Circle/Manage.vue
+- 圈子管理页面，圈主/管理员可管理圈子成员、审核申请等。
+
+#### views/Circle/Settings.vue
+- 圈子设置页面，支持圈主/管理员修改圈子设置、成员审核等。
+
+#### views/Circle/CircleMemberReview.vue
+- 圈子成员审核页面，圈主/管理员审核新成员申请。
+
+#### views/Error/NotFound.vue
+- 404页面，访问不存在的路由时显示。
+
+#### views/AI/Chat.vue
+- AI 聊天助手页面，支持与AI进行对话。
+
+#### views/AI/Recommend.vue
+- AI 书籍推荐页面，根据用户兴趣推荐书籍。
+
+#### views/Chat/ChatWindow.vue
+- 实时聊天窗口，支持圈内成员或好友间聊天。
+
+---
+
+> 以上为每个主要 Vue 页面功能简要说明，具体实现细节请参考对应源码文件。
 
 
