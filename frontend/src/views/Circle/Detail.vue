@@ -1,71 +1,103 @@
 <template>
-  <div class="circle-detail" v-if="group">
-    <div class="circle-header">
-      <div class="circle-info">
-        <h2 class="circle-title">{{ group.name }}</h2>
-        <div class="circle-meta">
-          <span class="circle-founder">圈主：{{ group.founder_name || group.founder?.account || group.founder_id }}</span>
-          <span>成员数：{{ group.memberCount || group.member_count || members.length }}</span>
-        </div>
-        <p class="circle-desc">{{ group.description }}</p>
-        <div class="circle-actions">
-          <!-- 学生页面 -->
-          <template v-if="isStudent">
-            <span v-if="isMember" class="joined-tip">已加入圈子</span>
-            <span v-else-if="pending || isPendingMember" class="pending-tip">等待审核中</span>
-            <button
-              v-else
-              class="circle-btn"
-              @click="joinGroup"
-            >加入圈子</button>
-          </template>
-          <!-- 老师页面 -->
-          <template v-else-if="isTeacher">
-            <button class="circle-btn" @click="goCreate">创建圈子</button>
-            <button
-              v-if="isOwner"
-              class="circle-btn"
-              @click="goEdit"
-            >编辑圈子</button>
-            <button
-              v-if="isOwner"
-              class="circle-btn"
-              @click="goReview"
-            >成员审核</button>
-          </template>
-          <button class="circle-btn" @click="goCircleList">返回圈子列表</button>
-        </div>
+  <div class="circle-bg">
+    <div class="page-header">
+      <img class="page-logo" src="@/assests/images/logo.png" alt="logo" />
+      <div class="nav-btns">
+        <router-link to="/">首页</router-link>
+        <router-link to="/books">书籍</router-link>
+        <router-link to="/journal">书评</router-link>
+        <router-link to="/circle">圈子</router-link>
+        <router-link to="/profile">我的</router-link>
+        <router-link to="/search">搜索</router-link>
       </div>
     </div>
-    <div class="circle-section">
-      <!-- 只有圈主能查看圈子成员 -->
-      <member-list v-if="isOwner" :members="members" :is-owner="isOwner" :group-id="group.id" />
-    </div>
-    <div class="circle-section">
-      <h3>圈子讨论</h3>
-      <!-- 只有圈子成员可以发表讨论 -->
-      <div v-if="isMember" class="discussion-create">
-        <input v-model="discussionTitle" placeholder="讨论标题" class="discussion-input" />
-        <textarea v-model="discussionContent" placeholder="讨论内容" rows="3" class="discussion-textarea"></textarea>
-        <button class="circle-btn" @click="submitDiscussion" :disabled="!discussionTitle.trim() || !discussionContent.trim() || submitting">
-          {{ submitting ? '发表中...' : '发表讨论' }}
-        </button>
-        <div v-if="discussionError" class="discussion-error">{{ discussionError }}</div>
-        <div v-if="discussionSuccess" class="discussion-success">{{ discussionSuccess }}</div>
-      </div>
-      <ul class="discussion-list">
-        <li v-for="d in discussions" :key="d.id" class="discussion-item">
-          <div class="discussion-title-row">
-            <span class="discussion-title">{{ d.title }}</span>
-            <span class="discussion-meta">
-              by {{ d.poster?.account || d.poster_id }}
-              <span v-if="d.post_time"> · {{ d.post_time.slice(0,16) }}</span>
-            </span>
+    <div class="circle-detail" v-if="group">
+      <div class="circle-header">
+        <div class="circle-info">
+          <h2 class="circle-title">{{ group.name }}</h2>
+          <div class="circle-meta">
+            <span class="circle-founder">圈主：{{ group.founder_name || group.founder?.account || group.founder_id }}</span>
+            <span>成员数：{{ group.memberCount || group.member_count || members.length }}</span>
           </div>
-          <div class="discussion-content-preview">{{ d.content ? d.content.slice(0,80) : '' }}</div>
-        </li>
-        <li v-if="!discussions.length" class="empty-tip">暂无讨论</li>
-      </ul>
+          <p class="circle-desc">{{ group.description }}</p>
+          <div class="circle-actions">
+            <!-- 学生页面 -->
+            <template v-if="isStudent">
+              <span v-if="isMember" class="joined-tip">已加入圈子</span>
+              <span v-else-if="pending || isPendingMember" class="pending-tip">等待审核中</span>
+              <button
+                v-else
+                class="circle-btn"
+                @click="joinGroup"
+              >加入圈子</button>
+            </template>
+            <!-- 老师页面 -->
+            <template v-else-if="isTeacher">
+              <button class="circle-btn" @click="goCreate">创建圈子</button>
+              <button
+                v-if="isOwner"
+                class="circle-btn"
+                @click="goEdit"
+              >编辑圈子</button>
+              <button
+                v-if="isOwner"
+                class="circle-btn"
+                @click="goReview"
+              >成员审核</button>
+            </template>
+            <button class="circle-btn" @click="goCircleList">返回圈子列表</button>
+          </div>
+        </div>
+      </div>
+      <div class="circle-section">
+        <!-- Tab结构开始 -->
+        <div class="circle-tabs">
+          <button :class="['tab-btn', activeTab==='info' && 'active']" @click="activeTab='info'">圈子介绍</button>
+          <button :class="['tab-btn', activeTab==='members' && 'active']" @click="activeTab='members'">圈子成员</button>
+          <button :class="['tab-btn', activeTab==='discussion' && 'active']" @click="activeTab='discussion'">讨论区</button>
+        </div>
+        <div v-if="activeTab==='info'">
+          <div class="circle-section">
+            <h3>圈子介绍</h3>
+            <p>{{ group.description }}</p>
+          </div>
+        </div>
+        <div v-else-if="activeTab==='members'">
+          <div class="circle-section">
+            <h3>圈子成员</h3>
+            <member-list :members="members" :is-owner="isOwner" :group-id="group.id" />
+            <div v-if="!members.length" class="empty-tip">暂无成员，快邀请好友加入吧！</div>
+          </div>
+        </div>
+        <div v-else-if="activeTab==='discussion'">
+          <div class="circle-section">
+            <h3>圈子讨论</h3>
+            <!-- 只有圈子成员可以发表讨论 -->
+            <div v-if="isMember" class="discussion-create">
+              <input v-model="discussionTitle" placeholder="讨论标题" class="discussion-input" />
+              <textarea v-model="discussionContent" placeholder="讨论内容" rows="3" class="discussion-textarea"></textarea>
+              <button class="circle-btn" @click="submitDiscussion" :disabled="!discussionTitle.trim() || !discussionContent.trim() || submitting">
+                {{ submitting ? '发表中...' : '发表讨论' }}
+              </button>
+              <div v-if="discussionError" class="discussion-error">{{ discussionError }}</div>
+              <div v-if="discussionSuccess" class="discussion-success">{{ discussionSuccess }}</div>
+            </div>
+            <ul class="discussion-list">
+              <li v-for="d in discussions" :key="d.id" class="discussion-item">
+                <div class="discussion-title-row">
+                  <span class="discussion-title">{{ d.title }}</span>
+                  <span class="discussion-meta">
+                    by {{ d.poster?.account || d.poster_id }}
+                    <span v-if="d.post_time"> · {{ d.post_time.slice(0,16) }}</span>
+                  </span>
+                </div>
+                <div class="discussion-content-preview">{{ d.content ? d.content.slice(0,80) : '' }}</div>
+              </li>
+              <li v-if="!discussions.length" class="empty-tip">暂无讨论</li>
+            </ul>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -175,9 +207,73 @@ const submitDiscussion = async () => {
     submitting.value = false
   }
 }
+const activeTab = ref('info')
+
+// 监听Tab切换，切到成员Tab时刷新成员
+import { watch } from 'vue'
+watch(activeTab, async (val) => {
+  if (val === 'members') {
+    await store.dispatch('circle/fetchMembers', route.params.id)
+  }
+})
 </script>
 <style scoped>
+.circle-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  min-height: 100vh;
+  min-width: 100vw;
+  background: url('@/assests/images/moyun.png') no-repeat center center;
+  background-size: cover;
+  z-index: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  overflow-y: auto;
+}
+.page-header {
+  position: absolute;
+  top: 24px;
+  right: 48px;
+  display: flex;
+  align-items: center;
+  z-index: 20;
+}
+.page-logo {
+  width: 70px;
+  height: 70px;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 2px 12px #eee;
+  object-fit: cover;
+  border: 2px solid #e0e7ff;
+  margin-right: 18px;
+}
+.nav-btns {
+  display: flex;
+  gap: 18px;
+}
+.nav-btns a {
+  color: #409eff;
+  font-weight: 500;
+  text-decoration: none;
+  padding: 6px 16px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.85);
+  transition: background 0.2s, color 0.2s;
+}
+.nav-btns a:hover {
+  background: #409eff;
+  color: #fff;
+}
 .circle-detail {
+  position: relative;
+  z-index: 1;
+  margin-top: 120px;
   max-width: 700px;
   margin: 2rem auto;
   background: #fff;
@@ -321,9 +417,30 @@ const submitDiscussion = async () => {
   text-align: center;
   margin: 1.5rem 0;
 }
+.circle-tabs {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid #eee;
+}
+.tab-btn {
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #888;
+  padding: 0.7rem 1.5rem 0.7rem 0.5rem;
+  cursor: pointer;
+  border-bottom: 2.5px solid transparent;
+  transition: color 0.2s, border-bottom 0.2s;
+}
+.tab-btn.active {
+  color: #409eff;
+  border-bottom: 2.5px solid #409eff;
+  background: #f7f9fa;
+}
 @media (max-width: 800px) {
   .circle-detail { padding: 1rem; }
   .circle-header { flex-direction: column; gap: 1rem; }
 }
 </style>
-  .circle-header { flex-direction: column; gap: 1rem; }

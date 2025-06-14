@@ -4,7 +4,7 @@ import store from '@/store'
 const api = axios.create({
     // 优先使用 .env 配置的 VUE_APP_API_BASE_URL
     baseURL: process.env.VUE_APP_API_BASE_URL || 'http://localhost:5001/api',
-    timeout: 10000
+    timeout: 20000 // 增大超时时间，防止AI推荐超时
 })
 
 // 请求拦截器
@@ -18,7 +18,7 @@ api.interceptors.request.use(config => {
 
 // 响应拦截器
 api.interceptors.response.use(
-    response => response.data,
+    response => response, // 保留原始response对象
     async error => {
         const originalRequest = error.config
 

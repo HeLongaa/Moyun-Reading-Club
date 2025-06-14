@@ -40,8 +40,15 @@ const actions = {
     if (res.success) commit('SET_GROUP_DETAIL', res.data)
   },
   async fetchMembers({ commit }, id) {
-    const res = await circlesApi.getGroupMembers(id)
-    if (res.success) commit('SET_MEMBERS', res.data)
+    try {
+      const res = await circlesApi.getGroupMembers(id)
+      // 兼容后端返回格式，确保是数组
+      const members = res.data?.data || res.data || []
+      commit('SET_MEMBERS', Array.isArray(members) ? members : [])
+    } catch (e) {
+      console.error('获取成员失败:', e)
+      commit('SET_MEMBERS', [])
+    }
   },
   async fetchPendingMembers({ commit }, id) {
     const res = await circlesApi.getPendingMembers(id)
@@ -67,7 +74,7 @@ const actions = {
 const getters = {
   groups: state => state.groups,
   groupDetail: state => state.groupDetail,
-  members: state => state.members,
+  members: state => Array.isArray(state.members) ? state.members : (state.members ? [state.members] : []),
   pendingMembers: state => state.pendingMembers,
   discussions: state => state.discussions,
   discussionDetail: state => state.discussionDetail
