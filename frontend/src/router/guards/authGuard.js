@@ -1,50 +1,23 @@
-export default function authGuard(router, store) {
-    router.beforeEach(async (to, from, next) => {
-        const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
-        const isAuthenticated = store.getters['auth/isAuthenticated']
+import store from '@/store'
 
-        // 需要登录但未认证
-        if (requiresAuth && !isAuthenticated) {
-            next({
-                path: '/login',
-                query: { redirect: to.fullPath }
-            })
-            return
-        }
-
-        // 已认证但访问登录/注册页
-        if (!requiresAuth && isAuthenticated) {
-            next('/')
-            return
-        }
-
-        // 检查Token有效性
-        if (requiresAuth) {
-            const isValid = await checkTokenValidity(store)
-            if (!isValid) {
-                next('/login')
-                return
-            }
-        }
-
+export default function authGuard(to, from, next) {
+  const isAuthenticated = store.getters['auth/isAuthenticated']
+  // 需要认证的页面加 meta: { requiresAuth: true }
+  if (to.matched.some(record => record.meta.requiresAuth)) {
+    if (!isAuthenticated) {
+      // 避免重定向循环
+      if (to.path !== '/login') {
+        next({ path: '/login', query: { redirect: to.fullPath } })
+      } else {
         next()
-    })
-}
-
-async function checkTokenValidity(store) {
-    const accessToken = store.state.auth.accessToken
-    if (!accessToken) return false
-
-    try {
-        // 简单验证Token是否过期
-        const { exp } = JSON.parse(atob(accessToken.split('.')[1]))
-        if (exp * 1000 > Date.now()) return true
-
-        // Token过期，尝试刷新
-        await store.dispatch('auth/refreshToken')
-        return true
-    } catch (error) {
-        store.commit('auth/LOGOUT')
-        return false
+      }
+    } else {
+      next()
     }
+  } else if ((to.path === '/login' || to.path === '/register') && isAuthenticated) {
+    // 已登录访问登录/注册页自动跳主界面
+    next({ path: from.fullPath !== '/login' && from.fullPath !== '/register' ? from.fullPath : '/' })
+  } else {
+    next()
+  }
 }

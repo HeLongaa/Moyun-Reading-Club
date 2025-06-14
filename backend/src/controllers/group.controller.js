@@ -17,7 +17,7 @@ exports.getGroups = async (req, res) => {
   try {
     const { page = 1, limit = 10, search } = req.query;
     const offset = (page - 1) * limit;
-    
+
     // 构建查询条件
     const where = {};
     if (search) {
@@ -26,7 +26,7 @@ exports.getGroups = async (req, res) => {
         { description: { [Op.like]: `%${search}%` } }
       ];
     }
-    
+
     // 查询圈子
     const { count, rows: groups } = await Group.findAndCountAll({
       where,
@@ -41,12 +41,12 @@ exports.getGroups = async (req, res) => {
       limit: parseInt(limit),
       order: [['establish_time', 'DESC']]
     });
-    
+
     // 查询每个圈子的成员数量和讨论数量
     const groupsWithStats = await Promise.all(groups.map(async (group) => {
       const memberCount = await GroupUser.count({ where: { group_id: group.id } });
       const discussionCount = await GroupDiscussion.count({ where: { group_id: group.id } });
-      
+
       // 如果用户已登录，检查用户是否已加入该圈子
       let isJoined = false;
       if (req.user) {
@@ -58,7 +58,7 @@ exports.getGroups = async (req, res) => {
         });
         isJoined = !!membership;
       }
-      
+
       return {
         ...group.toJSON(),
         memberCount,
@@ -66,7 +66,7 @@ exports.getGroups = async (req, res) => {
         isJoined
       };
     }));
-    
+
     res.status(200).json({
       success: true,
       data: {
@@ -93,7 +93,7 @@ exports.getGroups = async (req, res) => {
 exports.getGroupById = async (req, res) => {
   try {
     const { id } = req.params;
-    
+
     const group = await Group.findByPk(id, {
       include: [
         {
@@ -103,18 +103,18 @@ exports.getGroupById = async (req, res) => {
         }
       ]
     });
-    
+
     if (!group) {
       return res.status(404).json({
         success: false,
         error: '圈子不存在'
       });
     }
-    
+
     // 查询成员数量和讨论数量
     const memberCount = await GroupUser.count({ where: { group_id: id } });
     const discussionCount = await GroupDiscussion.count({ where: { group_id: id } });
-    
+
     // 如果用户已登录，检查用户是否已加入该圈子
     let isJoined = false;
     if (req.user) {
@@ -126,7 +126,7 @@ exports.getGroupById = async (req, res) => {
       });
       isJoined = !!membership;
     }
-    
+
     res.status(200).json({
       success: true,
       data: {
@@ -154,7 +154,7 @@ exports.createGroup = async (req, res) => {
   try {
     const { name, description } = req.body;
     const founder_id = req.user.id;
-    
+
     // 检查必要字段
     if (!name) {
       return res.status(400).json({
@@ -162,7 +162,7 @@ exports.createGroup = async (req, res) => {
         error: '圈子名称不能为空'
       });
     }
-    
+
     // 检查圈子名称是否已存在
     const existingGroup = await Group.findOne({ where: { name } });
     if (existingGroup) {
@@ -171,7 +171,7 @@ exports.createGroup = async (req, res) => {
         error: '圈子名称已存在'
       });
     }
-    
+
     // 创建圈子
     const group = await Group.create({
       name,
@@ -179,15 +179,15 @@ exports.createGroup = async (req, res) => {
       founder_id,
       establish_time: new Date()
     });
-    
+
     // 创建者自动加入圈子
     await GroupUser.create({
       user_id: founder_id,
       group_id: group.id,
       join_time: new Date(),
-      stats: 'agree'
+      state: 'agree'
     });
-    
+
     res.status(201).json({
       success: true,
       message: '圈子创建成功',
@@ -212,17 +212,17 @@ exports.updateGroup = async (req, res) => {
     const { id } = req.params;
     const { name, description } = req.body;
     const userId = req.user.id;
-    
+
     // 查找圈子
     const group = await Group.findByPk(id);
-    
+
     if (!group) {
       return res.status(404).json({
         success: false,
         error: '圈子不存在'
       });
     }
-    
+
     // 检查是否为创建者或管理员
     if (group.founder_id !== userId && req.user.role !== 'admin') {
       return res.status(403).json({
@@ -230,7 +230,7 @@ exports.updateGroup = async (req, res) => {
         error: '您没有权限修改这个圈子'
       });
     }
-    
+
     // 如果更改了名称，检查新名称是否已存在
     if (name && name !== group.name) {
       const existingGroup = await Group.findOne({ where: { name } });
@@ -241,13 +241,13 @@ exports.updateGroup = async (req, res) => {
         });
       }
     }
-    
+
     // 更新圈子
     await group.update({
       name: name || group.name,
       description: description !== undefined ? description : group.description
     });
-    
+
     res.status(200).json({
       success: true,
       message: '圈子更新成功',
@@ -271,17 +271,17 @@ exports.deleteGroup = async (req, res) => {
   try {
     const { id } = req.params;
     const userId = req.user.id;
-    
+
     // 查找圈子
     const group = await Group.findByPk(id);
-    
+
     if (!group) {
       return res.status(404).json({
         success: false,
         error: '圈子不存在'
       });
     }
-    
+
     // 检查是否为创建者或管理员
     if (group.founder_id !== userId && req.user.role !== 'admin') {
       return res.status(403).json({
@@ -322,7 +322,7 @@ exports.deleteGroup = async (req, res) => {
       // 删除圈子图标文件
       await fileManager.deleteFile(group.group_icon);
     }
-    
+
     res.status(200).json({
       success: true,
       message: '圈子及其所有相关内容已删除成功'
@@ -345,7 +345,7 @@ exports.joinGroup = async (req, res) => {
   try {
     const { id } = req.params;
     const user_id = req.user.id;
-    
+
     // 检查圈子是否存在
     const group = await Group.findByPk(id);
     if (!group) {
@@ -354,7 +354,7 @@ exports.joinGroup = async (req, res) => {
         error: '圈子不存在'
       });
     }
-    
+
     // 检查是否已加入圈子
     const existingMembership = await GroupUser.findOne({
       where: {
@@ -362,14 +362,14 @@ exports.joinGroup = async (req, res) => {
         user_id
       }
     });
-    
+
     if (existingMembership) {
-      if (existingMembership.stats == 'agree') {
+      if (existingMembership.state == 'agree') {
         return res.status(400).json({
           success: true,
           message: '您已经是该圈子的成员'
         });
-      } else if (existingMembership.stats == 'wait') {
+      } else if (existingMembership.state == 'wait') {
         return res.status(400).json({
           success: false,
           error: '您的加入申请正在审核中，请耐心等待'
@@ -379,15 +379,15 @@ exports.joinGroup = async (req, res) => {
         success: false,
         error: '您已被拒绝加入该圈子，请联系圈子管理员'
       });
-      
+
     }
-    
+
     // 加入圈子
     await GroupUser.create({
       group_id: id,
       user_id,
       join_time: new Date(),
-      stats: 'wait' // 初始状态为等待审核
+      state: 'wait' // 初始状态为等待审核
     });
     // 发送通知给圈子管理员（需要添加通知服务）
     res.status(200).json({
@@ -412,7 +412,7 @@ exports.leaveGroup = async (req, res) => {
   try {
     const { id } = req.params;
     const user_id = req.user.id;
-    
+
     // 检查圈子是否存在
     const group = await Group.findByPk(id);
     if (!group) {
@@ -421,7 +421,7 @@ exports.leaveGroup = async (req, res) => {
         error: '圈子不存在'
       });
     }
-    
+
     // 检查是否为创建者
     if (group.founder_id === user_id) {
       return res.status(400).json({
@@ -429,7 +429,7 @@ exports.leaveGroup = async (req, res) => {
         error: '圈子创建者不能退出圈子'
       });
     }
-    
+
     // 检查是否已加入圈子
     const membership = await GroupUser.findOne({
       where: {
@@ -437,17 +437,17 @@ exports.leaveGroup = async (req, res) => {
         user_id
       }
     });
-    
+
     if (!membership) {
       return res.status(400).json({
         success: false,
         error: '您不是该圈子的成员'
       });
     }
-    
+
     // 退出圈子
     await membership.destroy();
-    
+
     res.status(200).json({
       success: true,
       message: '成功退出圈子'
@@ -471,7 +471,7 @@ exports.getGroupMembers = async (req, res) => {
     const { id } = req.params;
     const { page = 1, limit = 10 } = req.query;
     const offset = (page - 1) * limit;
-    
+
     // 检查圈子是否存在
     const group = await Group.findByPk(id);
     if (!group) {
@@ -480,10 +480,10 @@ exports.getGroupMembers = async (req, res) => {
         error: '圈子不存在'
       });
     }
-    
+
     // 查询成员
     const { count, rows: memberships } = await GroupUser.findAndCountAll({
-      where: { group_id: id, stats: 'agree' }, // 只查询已同意加入的成员
+      where: { group_id: id, state: 'agree' }, // 将 staes 修改为 state
       include: [
         {
           model: User,
@@ -495,14 +495,14 @@ exports.getGroupMembers = async (req, res) => {
       limit: parseInt(limit),
       order: [['join_time', 'DESC']]
     });
-    
+
     // 提取用户信息
     const members = memberships.map(membership => ({
       ...membership.user.toJSON(),
       join_time: membership.join_time,
       isFounder: membership.user.id === group.founder_id
     }));
-    
+
     res.status(200).json({
       success: true,
       data: {
@@ -531,7 +531,7 @@ exports.getGroupDiscussions = async (req, res) => {
     const { id } = req.params;
     const { page = 1, limit = 10 } = req.query;
     const offset = (page - 1) * limit;
-    
+
     // 检查圈子是否存在
     const group = await Group.findByPk(id);
     if (!group) {
@@ -540,7 +540,7 @@ exports.getGroupDiscussions = async (req, res) => {
         error: '圈子不存在'
       });
     }
-    
+
     // 查询讨论
     const { count, rows: discussions } = await GroupDiscussion.findAndCountAll({
       where: { group_id: id },
@@ -555,19 +555,19 @@ exports.getGroupDiscussions = async (req, res) => {
       limit: parseInt(limit),
       order: [['post_time', 'DESC']]
     });
-    
+
     // 查询每个讨论的回复数量
     const discussionsWithReplyCount = await Promise.all(discussions.map(async (discussion) => {
       const replyCount = await GroupDiscussionReply.count({
         where: { discussion_id: discussion.id }
       });
-      
+
       return {
         ...discussion.toJSON(),
         replyCount
       };
     }));
-    
+
     res.status(200).json({
       success: true,
       data: {
@@ -596,7 +596,7 @@ exports.createDiscussion = async (req, res) => {
     const { id } = req.params;
     const { title, content } = req.body;
     const poster_id = req.user.id;
-    
+
     // 检查必要字段
     if (!title || !content) {
       return res.status(400).json({
@@ -604,7 +604,7 @@ exports.createDiscussion = async (req, res) => {
         error: '标题和内容不能为空'
       });
     }
-    
+
     // 检查圈子是否存在
     const group = await Group.findByPk(id);
     if (!group) {
@@ -613,7 +613,7 @@ exports.createDiscussion = async (req, res) => {
         error: '圈子不存在'
       });
     }
-    
+
     // 检查用户是否为圈子成员
     const membership = await GroupUser.findOne({
       where: {
@@ -621,14 +621,14 @@ exports.createDiscussion = async (req, res) => {
         user_id: poster_id
       }
     });
-    
+
     if (!membership) {
       return res.status(403).json({
         success: false,
         error: '您不是该圈子的成员，无法发表讨论'
       });
     }
-    
+
     // 创建讨论
     const discussion = await GroupDiscussion.create({
       group_id: id,
@@ -638,12 +638,12 @@ exports.createDiscussion = async (req, res) => {
       post_time: new Date(),
       is_read: false
     });
-    
+
     // 获取发帖人信息
     const poster = await User.findByPk(poster_id, {
       attributes: ['id', 'account', 'signature', 'avatar_path']
     });
-    
+
     res.status(201).json({
       success: true,
       message: '讨论创建成功',
@@ -669,7 +669,7 @@ exports.createDiscussion = async (req, res) => {
 exports.getDiscussionById = async (req, res) => {
   try {
     const { id, discussionId } = req.params;
-    
+
     // 检查圈子是否存在
     const group = await Group.findByPk(id);
     if (!group) {
@@ -678,7 +678,7 @@ exports.getDiscussionById = async (req, res) => {
         error: '圈子不存在'
       });
     }
-    
+
     // 查询讨论
     const discussion = await GroupDiscussion.findOne({
       where: {
@@ -693,14 +693,14 @@ exports.getDiscussionById = async (req, res) => {
         }
       ]
     });
-    
+
     if (!discussion) {
       return res.status(404).json({
         success: false,
         error: '讨论不存在'
       });
     }
-    
+
     // 查询回复
     const replies = await GroupDiscussionReply.findAll({
       where: { discussion_id: discussionId },
@@ -713,12 +713,12 @@ exports.getDiscussionById = async (req, res) => {
       ],
       order: [['reply_time', 'ASC']]
     });
-    
+
     // 标记为已读（如果用户已登录且是讨论的接收者）
     if (req.user && discussion.poster_id !== req.user.id) {
       await discussion.update({ is_read: true });
     }
-    
+
     res.status(200).json({
       success: true,
       data: {
@@ -745,7 +745,7 @@ exports.replyToDiscussion = async (req, res) => {
     const { id, discussionId } = req.params;
     const { content } = req.body;
     const author_id = req.user.id;
-    
+
     // 检查必要字段
     if (!content) {
       return res.status(400).json({
@@ -753,7 +753,7 @@ exports.replyToDiscussion = async (req, res) => {
         error: '回复内容不能为空'
       });
     }
-    
+
     // 检查圈子是否存在
     const group = await Group.findByPk(id);
     if (!group) {
@@ -762,7 +762,7 @@ exports.replyToDiscussion = async (req, res) => {
         error: '圈子不存在'
       });
     }
-    
+
     // 检查讨论是否存在
     const discussion = await GroupDiscussion.findOne({
       where: {
@@ -770,14 +770,14 @@ exports.replyToDiscussion = async (req, res) => {
         group_id: id
       }
     });
-    
+
     if (!discussion) {
       return res.status(404).json({
         success: false,
         error: '讨论不存在'
       });
     }
-    
+
     // 检查用户是否为圈子成员
     const membership = await GroupUser.findOne({
       where: {
@@ -785,14 +785,14 @@ exports.replyToDiscussion = async (req, res) => {
         user_id: author_id
       }
     });
-    
+
     if (!membership) {
       return res.status(403).json({
         success: false,
         error: '您不是该圈子的成员，无法回复讨论'
       });
     }
-    
+
     // 创建回复
     const reply = await GroupDiscussionReply.create({
       discussion_id: discussionId,
@@ -801,12 +801,12 @@ exports.replyToDiscussion = async (req, res) => {
       reply_time: new Date(),
       is_read: false
     });
-    
+
     // 获取回复作者信息
     const author = await User.findByPk(author_id, {
       attributes: ['id', 'account', 'signature', 'avatar_path']
     });
-    
+
     res.status(201).json({
       success: true,
       message: '回复成功',
@@ -833,7 +833,7 @@ exports.deleteDiscussion = async (req, res) => {
   try {
     const { id, discussionId } = req.params;
     const userId = req.user.id;
-    
+
     // 检查圈子是否存在
     const group = await Group.findByPk(id);
     if (!group) {
@@ -842,7 +842,7 @@ exports.deleteDiscussion = async (req, res) => {
         error: '圈子不存在'
       });
     }
-    
+
     // 查询讨论
     const discussion = await GroupDiscussion.findOne({
       where: {
@@ -850,14 +850,14 @@ exports.deleteDiscussion = async (req, res) => {
         group_id: id
       }
     });
-    
+
     if (!discussion) {
       return res.status(404).json({
         success: false,
         error: '讨论不存在'
       });
     }
-    
+
     // 检查是否为讨论发起人、圈子创建者或管理员
     if (discussion.poster_id !== userId && group.founder_id !== userId && req.user.role !== 'admin') {
       return res.status(403).json({
@@ -865,10 +865,10 @@ exports.deleteDiscussion = async (req, res) => {
         error: '您没有权限删除这个讨论'
       });
     }
-    
+
     // 删除讨论
     await discussion.destroy();
-    
+
     res.status(200).json({
       success: true,
       message: '讨论删除成功'
@@ -934,7 +934,7 @@ exports.uploadGroupIcon = async (req, res) => {
       error: '上传图标失败，请稍后重试'
     });
   }
-}; 
+};
 
 /**
  * 获取待审核的成员列表
@@ -945,7 +945,7 @@ exports.uploadGroupIcon = async (req, res) => {
 exports.getPendingMembers = async (req, res) => {
   try {
     const { id } = req.params;
-    
+
     // 检查圈子是否存在
     const group = await Group.findByPk(id);
     if (!group) {
@@ -954,7 +954,7 @@ exports.getPendingMembers = async (req, res) => {
         error: '圈子不存在'
       });
     }
-    
+
     // 检查用户是否为圈子创建者或管理员
     if (group.founder_id !== req.user.id && req.user.role !== 'admin') {
       return res.status(403).json({
@@ -962,7 +962,7 @@ exports.getPendingMembers = async (req, res) => {
         error: '您没有权限查看待审核成员'
       });
     }
-    
+
     // 查询待审核成员
     const pendingMembers = await GroupUser.findAll({
       where: {
@@ -978,7 +978,7 @@ exports.getPendingMembers = async (req, res) => {
       ],
       order: [['join_time', 'DESC']]
     });
-    
+
     res.status(200).json({
       success: true,
       data: pendingMembers.map(membership => ({
@@ -999,7 +999,7 @@ exports.approveMember = async (req, res) => {
   try {
     const { id, userId } = req.params;
     const isOno = req.body.isOno; // 是否同意加入，true为同意，false为拒绝
-    
+
     // 检查圈子是否存在
     const group = await Group.findByPk(id);
     if (!group) {
@@ -1008,7 +1008,7 @@ exports.approveMember = async (req, res) => {
         error: '圈子不存在'
       });
     }
-    
+
     // 检查用户是否为圈子创建者或管理员
     if (group.founder_id !== req.user.id && req.user.role !== 'admin') {
       return res.status(403).json({
@@ -1016,7 +1016,7 @@ exports.approveMember = async (req, res) => {
         error: '您没有权限审核成员'
       });
     }
-    
+
     // 查找待审核成员
     const membership = await GroupUser.findOne({
       where: {
@@ -1025,7 +1025,7 @@ exports.approveMember = async (req, res) => {
         state: 'wait'
       }
     });
-    
+
     if (!membership) {
       return res.status(404).json({
         success: false,
@@ -1034,7 +1034,7 @@ exports.approveMember = async (req, res) => {
     }
     // 更新成员状态为同意/拒绝
     await membership.update({ state: isOno ? 'agree' : 'refuse' });
-    
+
     res.status(200).json({
       success: true,
       message: isOno ? '成员审核通过' : '成员审核不通过',
@@ -1048,6 +1048,74 @@ exports.approveMember = async (req, res) => {
     res.status(500).json({
       success: false,
       error: '审核成员失败，请稍后重试'
+    });
+  }
+};
+
+/**
+ * 获取用户加入的圈子列表
+ * @param {Object} req 请求对象
+ * @param {Object} res 响应对象
+ */
+
+exports.getUserGroups = async (req, res) => {
+  try {
+    // 获取参数
+    const userId = req.user.id;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = (page - 1) * limit;
+
+    // 查询用户加入的圈子
+    const { count, rows: memberships } = await GroupUser.findAndCountAll({
+      where: {
+        user_id: userId,
+        state: 'agree' // 只返回已通过审核的圈子
+      },
+      include: [
+        {
+          model: Group,
+          as: 'group', // 添加这个别名
+          include: [
+            {
+              model: User,
+              as: 'founder',
+              attributes: ['id', 'account', 'signature', 'avatar_path']
+            }
+          ]
+        }
+      ],
+      offset,
+      limit: parseInt(limit),
+      order: [['join_time', 'DESC']]
+    });
+
+    // 格式化返回数据
+    const groups = memberships.map(membership => {
+      const group = membership.group.toJSON(); // 使用别名访问
+      return {
+        ...group,
+        join_time: membership.join_time,
+        state: membership.state
+      };
+    });
+
+    // 即使用户没有加入任何圈子，也返回成功状态，只是groups数组为空
+    res.status(200).json({
+      success: true,
+      message: count === 0 ? '用户未加入任何圈子' : undefined,
+      data: {
+        total: count,
+        page: parseInt(page),
+        limit: parseInt(limit),
+        groups
+      }
+    });
+  } catch (error) {
+    console.error('获取用户加入的圈子列表失败:', error);
+    res.status(500).json({
+      success: false,
+      error: '获取用户加入的圈子列表失败，请稍后重试'
     });
   }
 };

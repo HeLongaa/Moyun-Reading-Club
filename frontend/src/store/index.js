@@ -1,10 +1,17 @@
-import Vue from 'vue'
-import Vuex from 'vuex'
-import modules from './modules'
+import { createStore } from 'vuex'
+import auth from './modules/auth'
+import books from './modules/books'
+import circle from './modules/circle'
+import comments from './modules/comments'
+import chat from './modules/chat'
 
-Vue.use(Vuex)
-
-export default new Vuex.Store({
-    modules,
-    strict: process.env.NODE_ENV !== 'production'
+export default createStore({
+  modules: {
+    auth,
+    books,
+    circle,
+    comments,
+    chat
+  },
+  strict: process.env.NODE_ENV !== 'production'
 })

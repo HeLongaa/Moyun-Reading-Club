@@ -4,9 +4,13 @@
       <div class="header">
         <h1>{{ circle.name }}</h1>
         <div class="meta">
-          <span class="mentor">
-            <img :src="circle.mentor.avatar" class="avatar">
-            {{ circle.mentor.name }}
+          <span class="mentor" v-if="circle.mentor">
+            <img :src="circle.mentor?.avatar || '/static/avatar/default.png'" class="avatar">
+            {{ circle.mentor?.name || '暂无导师' }}
+          </span>
+          <span class="mentor" v-else>
+            <img src="/static/avatar/default.png" class="avatar">
+            暂无导师
           </span>
           <span class="members">
             {{ circle.memberCount }} 位成员
@@ -53,14 +57,13 @@ export default {
       ]
     },
     isMentor() {
-      return this.$store.state.auth.user.role === 'mentor'
+      const user = this.$store.state.auth.user
+      return user && user.role === 'mentor'
     }
   },
-
   async created() {
     await this.fetchCircleDetail(this.$route.params.id)
   },
-
   methods: {
     ...mapActions('circles', ['fetchCircleDetail'])
   }

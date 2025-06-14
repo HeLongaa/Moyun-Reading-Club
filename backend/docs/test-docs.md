@@ -135,7 +135,8 @@
         "email": "tea@mail.com",
         "telephone": "19888998888",
         "signature": "我是老师",
-        "role": "teacher"
+        "role": "teacher",
+        "avatar_path": ""//需要拼接
     }
   }
   ```
@@ -243,6 +244,25 @@
       "likeCount": 20,
       "commentCount": 5,
       "groupCount": 3
+    }
+  }
+  ```
+
+### 5. 查询某个用户加入的圈子 ✅
+
+- **URL**: `/profile/group/me-join`
+- **方法**: `GET`
+- **认证**: 需要 Bearer Token
+- **响应**:
+  ```json
+  {
+    "success": true,
+    "message": "用户未加入任何圈子",
+    "data": {
+        "total": 0,
+        "page": 1,
+        "limit": 10,
+        "groups": []
     }
   }
   ```
@@ -1083,6 +1103,9 @@
       }
   }
   ```
+
+
+
 
 
 ## 聊天相关

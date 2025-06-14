@@ -1,150 +1,97 @@
 <template>
   <div class="circle-settings">
-    <h2>学习圈设置</h2>
-    
-    <el-form 
-      :model="form" 
-      label-width="120px"
-      @submit.native.prevent="handleSubmit"
-    >
-      <el-form-item label="圈子名称">
-        <el-input v-model="form.name" />
-      </el-form-item>
-      
-      <el-form-item label="圈子描述">
-        <el-input 
-          v-model="form.description" 
-          type="textarea" 
-          :rows="3" 
-        />
-      </el-form-item>
-      
-      <el-form-item>
-        <el-button 
-          type="primary" 
-          native-type="submit"
-          :loading="loading"
-        >
-          保存设置
-        </el-button>
-      </el-form-item>
-    </el-form>
-    
-    <h3>成员管理</h3>
-    <member-list 
-      :members="members" 
-      @update-role="handleUpdateRole"
-    />
-    
-    <el-divider />
-    
-    <el-popconfirm
-      title="确定要删除这个圈子吗？"
-      @confirm="handleDeleteCircle"
-    >
-      <el-button 
-        slot="reference" 
-        type="danger" 
-        :loading="deleting"
-      >
-        删除圈子
-      </el-button>
-    </el-popconfirm>
+    <h2>圈子设置</h2>
+    <form @submit.prevent="handleSave">
+      <div class="form-group">
+        <label>圈子名称</label>
+        <input v-model="form.name" required />
+      </div>
+      <div class="form-group">
+        <label>圈子简介</label>
+        <textarea v-model="form.description" rows="3"></textarea>
+      </div>
+      <div class="form-group">
+        <label>圈子图标</label>
+        <input type="file" @change="onIconChange" accept="image/*" />
+      </div>
+      <button type="submit" :disabled="loading">保存</button>
+      <div v-if="error" class="error-tip">{{ error }}</div>
+      <div v-if="success" class="success-tip">保存成功！</div>
+    </form>
+    <h3>成员审核</h3>
+    <ul>
+      <li v-for="m in pendingMembers" :key="m.user_id">
+        {{ m.user.account }}
+        <button @click="review(m.user_id, true)">同意</button>
+        <button @click="review(m.user_id, false)">拒绝</button>
+      </li>
+      <li v-if="!pendingMembers.length" class="empty-tip">暂无待审核成员</li>
+    </ul>
   </div>
 </template>
 
 <script>
-import { mapState, mapActions } from 'vuex'
-import MemberList from '@/components/circles/MemberList'
-
+import groupApi from '@/api/circles.api'
 export default {
   name: 'CircleSettings',
-  components: { MemberList },
-  
   data() {
     return {
+      form: { name: '', description: '' },
+      icon: null,
       loading: false,
-      deleting: false,
-      form: {
-        name: '',
-        description: ''
-      },
-      members: []
+      error: '',
+      success: false,
+      pendingMembers: []
     }
   },
-  
-  computed: {
-    ...mapState('circles', ['currentCircle'])
+  async created() {
+    const id = this.$route.params.id
+    const res = await groupApi.getGroupDetail(id)
+    this.form.name = res.data?.data?.name || ''
+    this.form.description = res.data?.data?.description || ''
+    await this.fetchPending()
   },
-  
-  watch: {
-    currentCircle: {
-      immediate: true,
-      handler(circle) {
-        if (circle) {
-          this.form = {
-            name: circle.name,
-            description: circle.description
-          }
-          this.fetchMembers()
-        }
-      }
-    }
-  },
-  
   methods: {
-    ...mapActions('circles', [
-      'updateCircle',
-      'fetchCircleMembers',
-      'updateMemberRole',
-      'deleteCircle'
-    ]),
-    
-    async fetchMembers() {
-      const members = await this.fetchCircleMembers(this.currentCircle.id)
-      this.members = members
+    onIconChange(e) {
+      this.icon = e.target.files[0]
     },
-    
-    async handleSubmit() {
+    async handleSave() {
       this.loading = true
+      this.error = ''
+      this.success = false
       try {
-        await this.updateCircle({
-          circleId: this.currentCircle.id,
-          data: this.form
-        })
-        this.$message.success('设置已保存')
+        const id = this.$route.params.id
+        await groupApi.updateGroup(id, this.form)
+        if (this.icon) {
+          const formData = new FormData()
+          formData.append('icon', this.icon)
+          await groupApi.uploadGroupIcon(id, formData)
+        }
+        this.success = true
+      } catch (e) {
+        this.error = e?.response?.data?.error || e?.message || '保存失败'
       } finally {
         this.loading = false
       }
     },
-    
-    async handleUpdateRole({ userId, role }) {
-      await this.updateMemberRole({
-        circleId: this.currentCircle.id,
-        userId,
-        role
-      })
-      this.$message.success('成员权限已更新')
+    async fetchPending() {
+      const id = this.$route.params.id
+      const res = await groupApi.getPendingMembers(id)
+      this.pendingMembers = res.data?.data || []
     },
-    
-    async handleDeleteCircle() {
-      this.deleting = true
-      try {
-        await this.deleteCircle(this.currentCircle.id)
-        this.$message.success('圈子已删除')
-        this.$router.push('/circles')
-      } finally {
-        this.deleting = false
-      }
+    async review(userId, isOno) {
+      const id = this.$route.params.id
+      await groupApi.reviewMember(id, userId, { isOno })
+      await this.fetchPending()
     }
   }
 }
 </script>
 
 <style scoped>
-.circle-settings {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 20px;
-}
+.circle-settings { max-width: 600px; margin: 2rem auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 12px #eee; padding: 2rem; }
+.form-group { margin-bottom: 1rem; }
+.error-tip { color: #e74c3c; margin-top: 1rem; }
+.success-tip { color: #27ae60; margin-top: 1rem; }
+.empty-tip { color: #aaa; margin-top: 1rem; }
 </style>
